@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
+import { useNavigate } from 'react-router-dom'
 
 const Journal = ({ setMsg }) => {
+    const navigate = useNavigate()
     const [stats, setStats] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [totals, setTotals] = useState({
@@ -76,6 +78,7 @@ const Journal = ({ setMsg }) => {
         <div className="container mx-auto p-1 md:p-4">
             <div className="bg-white shadow-sm rounded-lg p-2 md:p-6">
                 <p className="text-xl font-bold mb-4">Journal</p>
+                <button className="" onClick={()=> navigate('/forex')}>Money</button>
 
                 {/* Date Input */}
                 <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
