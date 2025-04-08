@@ -68,6 +68,7 @@ const Journal = ({ setMsg }) => {
             },
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
+        console.log(stats)
     }, [stats]);
 
     const headers = ["#", "Article", "P.A.U", "Initial", "Entrées", "Sorties", "P.V.U", "Total", "Restant", "Bénéfice"];
