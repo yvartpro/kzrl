@@ -5,6 +5,7 @@ import Products from './pages/Products';
 import Purchases from './pages/Purchases';
 import Sales from './pages/Sales';
 import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="purchases" element={<Purchases />} />
           <Route path="sales" element={<Sales />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

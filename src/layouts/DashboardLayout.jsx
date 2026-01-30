@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Home, Package, ShoppingCart, DollarSign, BarChart3, Menu, X } from 'lucide-react';
+import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ const navigation = [
   { name: 'Purchases', href: '/purchases', icon: ShoppingCart },
   { name: 'Sales', href: '/sales', icon: DollarSign },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function DashboardLayout() {
@@ -37,8 +38,8 @@ export default function DashboardLayout() {
                     to={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 ${isActive
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
                       }`}
                   >
                     <item.icon className="h-5 w-5" />
@@ -64,8 +65,8 @@ export default function DashboardLayout() {
                 key={item.name}
                 to={item.href}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 ${isActive
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-gray-700 hover:bg-gray-50'
                   }`}
               >
                 <item.icon className="h-5 w-5" />
