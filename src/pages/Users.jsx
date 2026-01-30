@@ -181,7 +181,10 @@ export default function Users() {
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => setPaymentUser(user)}
+                        onClick={() => {
+                          setPaymentUser(user);
+                          setPaymentAmount(user.salary);
+                        }}
                         className="p-1 hover:bg-green-50 text-green-600 rounded transition-colors"
                         title="Payer"
                       >

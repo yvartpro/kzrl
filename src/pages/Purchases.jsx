@@ -157,7 +157,16 @@ export default function Purchases() {
                 <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-50 rounded-lg">
                   <select
                     value={item.productId}
-                    onChange={(e) => updateItem(index, 'productId', e.target.value)}
+                    onChange={(e) => {
+                      const prodId = e.target.value;
+                      const product = products.find(p => p.id === prodId);
+                      const unitPrice = product ? parseFloat(product.purchasePrice) : 0;
+
+                      const newItems = [...formData.items];
+                      newItems[index].productId = prodId;
+                      newItems[index].unitPriceBox = unitPrice;
+                      setFormData({ ...formData, items: newItems });
+                    }}
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   >
