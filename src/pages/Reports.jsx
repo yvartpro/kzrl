@@ -6,6 +6,8 @@ import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatCard from '../components/StatCard';
+import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
+import Skeleton from '../components/Skeleton';
 
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -99,7 +101,6 @@ export default function Reports() {
     window.print();
   };
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -127,58 +128,79 @@ export default function Reports() {
 
       {error && <ErrorMessage message={error} />}
 
-      {/* Global Capital Indicator (Banner style for visibility) */}
-      <div className="bg-white rounded-lg p-6 mb-6 text-slate-900 shadow-lg overflow-hidden relative">
+      {/* Global Capital Indicator */}
+      <div className="bg-white rounded-2xl p-6 mb-6 text-slate-900 border border-gray-100 shadow-sm overflow-hidden relative">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            <h2 className="text-slate-900 text-sm font-bold uppercase tracking-wider mb-1">Capital Global du Bar</h2>
-            <div className="text-4xl font-extrabold">{formatCurrency(capitalData.globalCapital)}</div>
+            <h2 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Capital Global du Bar</h2>
+            {loading ? (
+              <Skeleton variant="text" className="w-48 h-10 mt-2" />
+            ) : (
+              <div className="text-4xl font-black tracking-tighter">{formatCurrency(capitalData.globalCapital)}</div>
+            )}
           </div>
-          <div className="flex gap-8 border-l border-slate-400 pl-8 h-full">
+          <div className="flex gap-8 border-l border-gray-100 pl-8 h-full">
             <div>
-              <p className="text-slate-900 text-xs font-medium uppercase mb-1">Liquidités (Caisse)</p>
-              <p className="text-xl font-bold">{formatCurrency(capitalData.liquidAssets)}</p>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Liquidités (Caisse)</p>
+              {loading ? (
+                <Skeleton variant="text" className="w-32 h-6" />
+              ) : (
+                <p className="text-xl font-bold text-slate-900">{formatCurrency(capitalData.liquidAssets)}</p>
+              )}
             </div>
             <div>
-              <p className="text-slate-700 text-xs font-medium uppercase mb-1">Valeur du Stock</p>
-              <p className="text-xl font-bold">{formatCurrency(capitalData.stockValue)}</p>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Valeur du Stock</p>
+              {loading ? (
+                <Skeleton variant="text" className="w-32 h-6" />
+              ) : (
+                <p className="text-xl font-bold text-slate-900">{formatCurrency(capitalData.stockValue)}</p>
+              )}
             </div>
           </div>
         </div>
-        {/* Decorative background circle */}
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-slate-500 rounded-full opacity-20"></div>
+        <div className="absolute -right-20 -top-20 w-64 h-64 bg-slate-100 rounded-full opacity-50"></div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
-        <StatCard
-          title="Ventes du Jour"
-          value={formatCurrency(dailyReport?.totalDailySales || dailyReport?.totalRevenue || 0)}
-          icon={DollarSign}
-        />
-        <StatCard
-          title="Bénéfice Total"
-          value={formatCurrency(dailyReport?.totalProfit || 0)}
-          icon={TrendingUp}
-        />
-        <StatCard
-          title="Transactions"
-          value={dailyReport?.transactionCount || 0}
-          icon={FileText}
-        />
-        <StatCard
-          title="Avoir en Stock"
-          value={formatCurrency(stockData?.totalValue || 0)}
-          icon={Package}
-        />
+        {loading ? (
+          <CardSkeleton count={4} />
+        ) : (
+          <>
+            <StatCard
+              title="Ventes du Jour"
+              value={formatCurrency(dailyReport?.totalDailySales || dailyReport?.totalRevenue || 0)}
+              icon={DollarSign}
+              className="hover-lift"
+            />
+            <StatCard
+              title="Bénéfice Total"
+              value={formatCurrency(dailyReport?.totalProfit || 0)}
+              icon={TrendingUp}
+              className="hover-lift"
+            />
+            <StatCard
+              title="Transactions"
+              value={dailyReport?.transactionCount || 0}
+              icon={FileText}
+              className="hover-lift"
+            />
+            <StatCard
+              title="Avoir en Stock"
+              value={formatCurrency(stockData?.totalValue || 0)}
+              icon={Package}
+              className="hover-lift"
+            />
+          </>
+        )}
       </div>
 
       {/* Accounting Journal */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
-        <div className="p-6 border-b bg-gray-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Journal Général</h2>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Journal Général</h2>
               <p className="text-sm text-gray-600 mt-1">Date : {new Date(selectedDate).toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 year: 'numeric',
@@ -199,61 +221,60 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="overflow-x-auto relative min-h-[200px]">
-          {journalLoading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-              <LoadingSpinner />
-            </div>
-          )}
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Heure</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Débit (FBu)</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Crédit (FBu)</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Solde (FBu)</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {journalData.entries.length === 0 ? (
+        <div className="overflow-x-auto relative">
+          {journalLoading ? (
+            <TableSkeleton rows={10} cols={5} />
+          ) : (
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/80">
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                    <p>Aucune transaction trouvée</p>
-                  </td>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Heure</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Description</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Débit (FBu)</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Crédit (FBu)</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Solde (FBu)</th>
                 </tr>
-              ) : (
-                <>
-                  {journalData.entries.map((entry, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(entry.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="font-medium">{entry.description}</div>
-                        <div className="text-xs text-gray-500">{entry.reference}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                        {entry.debit > 0 ? <span className="text-green-600">{formatCurrency(entry.debit)}</span> : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                        {entry.credit > 0 ? <span className="text-red-600">{formatCurrency(entry.credit)}</span> : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
-                        {formatCurrency(entry.balance)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-gray-50 font-bold border-t-2 border-gray-200">
-                    <td colSpan="2" className="px-6 py-4 text-sm text-gray-900">Totaux du jour</td>
-                    <td className="px-6 py-4 text-right text-green-700">{formatCurrency(journalData.totalDebit)}</td>
-                    <td className="px-6 py-4 text-right text-red-700">{formatCurrency(journalData.totalCredit)}</td>
-                    <td className="px-6 py-4 text-right text-gray-900">{formatCurrency(journalData.totalDebit - journalData.totalCredit)}</td>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {journalData.entries.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                      <p>Aucune transaction trouvée</p>
+                    </td>
                   </tr>
-                </>
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  <>
+                    {journalData.entries.map((entry, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(entry.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="font-medium">{entry.description}</div>
+                          <div className="text-xs text-gray-500">{entry.reference}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                          {entry.debit > 0 ? <span className="text-green-600">{formatCurrency(entry.debit)}</span> : <span className="text-gray-300">—</span>}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                          {entry.credit > 0 ? <span className="text-red-600">{formatCurrency(entry.credit)}</span> : <span className="text-gray-300">—</span>}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                          {formatCurrency(entry.balance)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-gray-50 font-bold border-t-2 border-gray-200">
+                      <td colSpan="2" className="px-6 py-4 text-sm text-gray-900">Totaux du jour</td>
+                      <td className="px-6 py-4 text-right text-green-700">{formatCurrency(journalData.totalDebit)}</td>
+                      <td className="px-6 py-4 text-right text-red-700">{formatCurrency(journalData.totalCredit)}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{formatCurrency(journalData.totalDebit - journalData.totalCredit)}</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Journal Pagination */}
@@ -284,12 +305,12 @@ export default function Reports() {
       </div>
 
       {/* Stock Valuation */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b bg-gray-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Valorisation du Stock (Achat)</h2>
-              <p className="text-sm text-gray-600 mt-1">Valeur totale : {formatCurrency(stockData.totalValue)}</p>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Valorisation du Stock (Achat)</h2>
+              <p className="text-sm text-gray-600 mt-1">Valeur totale : <span className="font-bold text-indigo-600">{formatCurrency(stockData.totalValue)}</span></p>
             </div>
             <div className="relative">
               <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -298,45 +319,44 @@ export default function Reports() {
                 placeholder="Rechercher un produit..."
                 value={stockSearch}
                 onChange={(e) => { setStockSearch(e.target.value); setStockPage(1); }}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64 shadow-sm"
               />
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto relative min-h-[200px]">
-          {stockLoading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-              <LoadingSpinner />
-            </div>
-          )}
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Produit</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Quantité</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">PMP Achat</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Valeur Totale</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {stockData.items.length === 0 ? (
+        <div className="overflow-x-auto relative">
+          {stockLoading ? (
+            <TableSkeleton rows={10} cols={4} />
+          ) : (
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/80">
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                    <p>Aucun produit trouvé</p>
-                  </td>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Produit</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Quantité</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">PMP Achat</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Valeur Totale</th>
                 </tr>
-              ) : (
-                stockData.items.map((item) => (
-                  <tr key={item.productId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">{item.productName}</td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-900">{item.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-900 font-medium">{formatCurrency(item.unitCost)}</td>
-                    <td className="px-6 py-4 text-sm text-right font-bold text-indigo-600">{formatCurrency(item.totalValue)}</td>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {stockData.items.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
+                      <p>Aucun produit trouvé</p>
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  stockData.items.map((item) => (
+                    <tr key={item.productId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">{item.productName}</td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-900">{item.quantity}</td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-900 font-medium">{formatCurrency(item.unitCost)}</td>
+                      <td className="px-6 py-4 text-sm text-right font-bold text-indigo-600">{formatCurrency(item.totalValue)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Stock Pagination */}
