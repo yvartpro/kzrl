@@ -31,12 +31,12 @@ export default function StockAdjustmentModal({
     e.preventDefault();
 
     if (formData.quantity === 0) {
-      setError('Quantity cannot be zero');
+      setError('La quantité ne peut pas être nulle');
       return;
     }
 
     if (newStock < 0) {
-      setError('Adjustment would result in negative stock');
+      setError('L\'ajustement entraînerait un stock négatif');
       return;
     }
 
@@ -52,7 +52,7 @@ export default function StockAdjustmentModal({
       });
       onClose();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to adjust stock');
+      setError(err.response?.data?.error || 'Échec de l\'ajustement du stock');
     } finally {
       setSubmitting(false);
     }
@@ -68,7 +68,7 @@ export default function StockAdjustmentModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Adjust Stock</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Ajuster Stock</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -82,7 +82,7 @@ export default function StockAdjustmentModal({
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <p className="font-medium text-gray-900">{product.name}</p>
             <p className="text-sm text-gray-600 mt-1">
-              Current Stock: <span className="font-semibold">{currentStock} units</span>
+              Stock Actuel : <span className="font-semibold">{currentStock} unités</span>
             </p>
           </div>
 
@@ -95,7 +95,7 @@ export default function StockAdjustmentModal({
           {/* Quantity Adjustment */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adjustment Quantity
+              Quantité d'Ajustement
             </label>
             <div className="flex items-center gap-3">
               <button
@@ -120,14 +120,14 @@ export default function StockAdjustmentModal({
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Use negative numbers to decrease stock, positive to increase
+              Utilisez des nombres négatifs pour diminuer, positifs pour augmenter
             </p>
           </div>
 
           {/* New Stock Preview */}
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              New Stock: <span className="font-semibold">{newStock} units</span>
+              Nouveau Stock : <span className="font-semibold">{newStock} unités</span>
               {formData.quantity !== 0 && (
                 <span className={formData.quantity > 0 ? 'text-green-600' : 'text-red-600'}>
                   {' '}({formData.quantity > 0 ? '+' : ''}{formData.quantity})
@@ -139,7 +139,7 @@ export default function StockAdjustmentModal({
           {/* Reason */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reason *
+              Motif *
             </label>
             <select
               value={formData.reason}
@@ -147,9 +147,9 @@ export default function StockAdjustmentModal({
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
-              <option value="ADJUSTMENT">Adjustment / Correction</option>
-              <option value="LOSS">Loss / Damage</option>
-              <option value="FREE">Free / Promotional</option>
+              <option value="ADJUSTMENT">Ajustement / Correction</option>
+              <option value="LOSS">Perte / Dommage</option>
+              <option value="FREE">Gratuité / Promotion</option>
             </select>
           </div>
 
@@ -163,7 +163,7 @@ export default function StockAdjustmentModal({
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows="3"
-              placeholder="Optional notes about this adjustment..."
+              placeholder="Notes optionnelles..."
             />
           </div>
 
@@ -175,14 +175,14 @@ export default function StockAdjustmentModal({
               disabled={submitting}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Cancel
+              Annuler
             </button>
             <button
               type="submit"
               disabled={submitting || formData.quantity === 0}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Adjusting...' : 'Adjust Stock'}
+              {submitting ? 'Ajustement...' : 'Ajuster Stock'}
             </button>
           </div>
         </form>

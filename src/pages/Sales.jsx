@@ -28,7 +28,7 @@ export default function Sales() {
       const res = await getProducts();
       setProducts(res.data.filter(p => (p.Stock?.quantity || 0) > 0));
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load products');
+      setError(err.response?.data?.error || 'Échec du chargement des produits');
     } finally {
       setLoading(false);
     }
@@ -88,14 +88,14 @@ export default function Sales() {
 
       setSuccess(true);
       setCart([]);
-      toast.success('Sale completed successfully!');
+      toast.success('Vente effectuée avec succès !');
       setTimeout(() => {
         setSuccess(false);
         fetchProducts();
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to process sale');
-      toast.error(err.response?.data?.error || 'Failed to process sale');
+      setError(err.response?.data?.error || 'Échec du traitement de la vente');
+      toast.error(err.response?.data?.error || 'Échec du traitement de la vente');
     } finally {
       setSubmitting(false);
     }
@@ -110,15 +110,15 @@ export default function Sales() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Point of Sale</h1>
-        <p className="text-gray-600 mt-1">Process sales transactions</p>
+        <h1 className="text-2xl font-bold text-gray-900">Point de Vente</h1>
+        <p className="text-gray-600 mt-1">Traiter les transactions de vente</p>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
       {success && (
         <div className="mb-6 rounded-lg bg-green-50 border border-green-200 p-4">
-          <p className="text-green-800 font-medium">Sale completed successfully!</p>
+          <p className="text-green-800 font-medium">Vente effectuée avec succès !</p>
         </div>
       )}
 
@@ -128,7 +128,7 @@ export default function Sales() {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Rechercher des produits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -143,10 +143,10 @@ export default function Sales() {
                 >
                   <h3 className="font-medium text-gray-900">{product.name}</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    {formatCurrency(product.sellingPrice)} / unit
+                    {formatCurrency(product.sellingPrice)} / unité
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Stock: {product.Stock?.quantity || 0} units
+                    Stock: {product.Stock?.quantity || 0} unités
                   </p>
                 </button>
               ))}
@@ -159,11 +159,11 @@ export default function Sales() {
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Cart ({cart.length})
+              Panier ({cart.length})
             </h2>
 
             {cart.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Cart is empty</p>
+              <p className="text-gray-500 text-center py-8">Panier vide</p>
             ) : (
               <>
                 <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -207,14 +207,14 @@ export default function Sales() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Method
+                    Moyen de Paiement
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="CASH">Cash</option>
+                    <option value="CASH">Espèces</option>
                     <option value="MOBILE_MONEY">Mobile Money</option>
                   </select>
                 </div>
@@ -224,7 +224,7 @@ export default function Sales() {
                   disabled={submitting || cart.length === 0}
                   className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
                 >
-                  {submitting ? 'Processing...' : 'Complete Sale'}
+                  {submitting ? 'Traitement...' : 'Finaliser Vente'}
                 </button>
               </>
             )}

@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Products', href: '/products', icon: Package },
-  { name: 'Purchases', href: '/purchases', icon: ShoppingCart },
-  { name: 'Sales', href: '/sales', icon: DollarSign },
-  { name: 'Cash & Expenses', href: '/cash-expenses', icon: Wallet },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Tableau de Bord', href: '/', icon: Home },
+  { name: 'Produits', href: '/products', icon: Package },
+  { name: 'Achats', href: '/purchases', icon: ShoppingCart },
+  { name: 'Ventes', href: '/sales', icon: DollarSign },
+  { name: 'Caisse & Dépenses', href: '/cash-expenses', icon: Wallet },
+  { name: 'Rapports', href: '/reports', icon: BarChart3 },
+  { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
 export default function DashboardLayout() {
@@ -25,7 +25,7 @@ export default function DashboardLayout() {
           <div className="fixed inset-0 bg-gray-900/80" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 w-64 bg-white">
             <div className="flex h-16 items-center justify-between px-6 border-b">
-              <h1 className="text-xl font-bold text-gray-900">Bar Manager</h1>
+              <h1 className="text-xl font-bold text-gray-900">Gestion Bar</h1>
               <button onClick={() => setSidebarOpen(false)}>
                 <X className="h-6 w-6" />
               </button>
@@ -56,7 +56,7 @@ export default function DashboardLayout() {
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-white">
         <div className="flex h-16 items-center px-6 border-b">
-          <h1 className="text-xl font-bold text-gray-900">Bar Manager</h1>
+          <h1 className="text-xl font-bold text-gray-900">Gestion Bar</h1>
         </div>
         <nav className="mt-6 px-3">
           {navigation.map((item) => {
@@ -90,7 +90,7 @@ export default function DashboardLayout() {
           </button>
           <div className="flex flex-1 justify-end">
             <span className="text-sm text-gray-600">
-              {new Date().toLocaleDateString('en-US', {
+              {new Date().toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',

@@ -78,8 +78,8 @@ export default function Products() {
       fetchData();
       toast.success('Product created successfully');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create product');
-      toast.error('Failed to create product');
+      setError(err.response?.data?.error || 'Échec de la création du produit');
+      toast.error('Échec de la création du produit');
     } finally {
       setSubmitting(false);
     }
@@ -88,10 +88,10 @@ export default function Products() {
   const handleAdjustStock = async (adjustmentData) => {
     try {
       await adjustStock(adjustmentData);
-      toast.success('Stock adjusted successfully');
+      toast.success('Stock ajusté avec succès');
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to adjust stock');
+      toast.error(err.response?.data?.error || 'Échec de l\'ajustement du stock');
       throw err;
     }
   };
@@ -113,15 +113,15 @@ export default function Products() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products & Stock</h1>
-          <p className="text-gray-600 mt-1">Manage your inventory</p>
+          <h1 className="text-2xl font-bold text-gray-900">Produits & Stock</h1>
+          <p className="text-gray-600 mt-1">Gérer votre inventaire</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <Plus className="h-5 w-5" />
-          Add Product
+          Ajouter Produit
         </button>
       </div>
 
@@ -132,7 +132,7 @@ export default function Products() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">Add New Product</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Ajouter un Nouveau Produit</h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg"
@@ -145,7 +145,7 @@ export default function Products() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Name *
+                    Nom du Produit *
                   </label>
                   <input
                     type="text"
@@ -170,7 +170,7 @@ export default function Products() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
+                    Catégorie *
                   </label>
                   <select
                     value={formData.CategoryId}
@@ -178,7 +178,7 @@ export default function Products() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
                   >
-                    <option value="">Select category</option>
+                    <option value="">Sélectionner une catégorie</option>
                     {categories.map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
@@ -187,7 +187,7 @@ export default function Products() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Units per Box *
+                    Unités par Carton *
                   </label>
                   <input
                     type="number"
@@ -197,12 +197,12 @@ export default function Products() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">How many units in one box?</p>
+                  <p className="text-xs text-gray-500 mt-1">Combien d'unités dans un carton ?</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Purchase Price (per box) *
+                    Prix d'Achat (par carton) *
                   </label>
                   <input
                     type="number"
@@ -213,12 +213,12 @@ export default function Products() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Cost when buying from supplier</p>
+                  <p className="text-xs text-gray-500 mt-1">Coût d'achat fournisseur</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Selling Price (per unit) *
+                    Prix de Vente (par unité) *
                   </label>
                   <input
                     type="number"
@@ -229,16 +229,16 @@ export default function Products() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Price when selling to customers</p>
+                  <p className="text-xs text-gray-500 mt-1">Prix de vente aux clients</p>
                 </div>
               </div>
 
               {formData.purchasePrice > 0 && formData.unitsPerBox > 0 && formData.sellingPrice > 0 && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Unit Cost:</strong> {formatCurrency(formData.purchasePrice / formData.unitsPerBox)}
+                    <strong>Coût Unitaire :</strong> {formatCurrency(formData.purchasePrice / formData.unitsPerBox)}
                     <br />
-                    <strong>Profit per Unit:</strong> {formatCurrency(formData.sellingPrice - (formData.purchasePrice / formData.unitsPerBox))}
+                    <strong>Profit par Unité :</strong> {formatCurrency(formData.sellingPrice - (formData.purchasePrice / formData.unitsPerBox))}
                   </p>
                 </div>
               )}
@@ -249,14 +249,14 @@ export default function Products() {
                   onClick={() => setShowModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
                 >
-                  Cancel
+                  Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
                 >
-                  {submitting ? 'Creating...' : 'Create Product'}
+                  {submitting ? 'Création...' : 'Créer Produit'}
                 </button>
               </div>
             </form>
@@ -270,7 +270,7 @@ export default function Products() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Rechercher des produits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -281,7 +281,7 @@ export default function Products() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">All Categories</option>
+            <option value="all">Toutes Catégories</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -295,25 +295,25 @@ export default function Products() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
+                  Produit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  Catégorie
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stock
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Units/Box
+                  Unités/Carton
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Purchase Price
+                  Prix d'Achat
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Selling Price
+                  Prix de Vente
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Statut
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -325,7 +325,7 @@ export default function Products() {
                 <tr>
                   <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
                     <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>No products found</p>
+                    <p>Aucun produit trouvé</p>
                   </td>
                 </tr>
               ) : (
@@ -344,16 +344,16 @@ export default function Products() {
                         {product.Category?.name || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {stockQty} units
+                        {stockQty} unités
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {product.unitsPerBox}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(product.purchasePrice)} / box
+                        {formatCurrency(product.purchasePrice)} / carton
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(product.sellingPrice)} / unit
+                        {formatCurrency(product.sellingPrice)} / unité
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStockStatusColor(status)}`}>
@@ -366,7 +366,7 @@ export default function Products() {
                           className="flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Edit3 className="h-4 w-4" />
-                          Adjust
+                          Ajuster
                         </button>
                       </td>
                     </tr>

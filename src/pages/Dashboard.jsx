@@ -44,7 +44,7 @@ export default function Dashboard() {
         lowStockCount: lowStock.length,
       });
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load dashboard data');
+      setError(err.response?.data?.error || 'Échec du chargement des données du tableau de bord');
     } finally {
       setLoading(false);
     }
@@ -53,33 +53,33 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back! Here's what's happening today.</p>
+        <h1 className="text-2xl font-bold text-gray-900">Tableau de Bord</h1>
+        <p className="text-gray-600 mt-1">Bienvenue ! Voici ce qui se passe aujourd'hui.</p>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         <StatCard
-          title="Today's Sales"
+          title="Ventes du Jour"
           value={formatCurrency(stats.todaySales)}
           icon={DollarSign}
           loading={loading}
         />
         <StatCard
-          title="Today's Profit"
+          title="Bénéfice du Jour"
           value={formatCurrency(stats.todayProfit)}
           icon={TrendingUp}
           loading={loading}
         />
         <StatCard
-          title="Cash in Hand"
+          title="Caisse Actuelle"
           value={formatCurrency(stats.cashBalance)}
           icon={Wallet}
           loading={loading}
         />
         <StatCard
-          title="Low Stock Items"
+          title="Articles en Stock Faible"
           value={stats.lowStockCount.toString()}
           icon={AlertTriangle}
           loading={loading}
@@ -87,31 +87,31 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions Rapides</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/sales"
             className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <DollarSign className="h-8 w-8 text-blue-600 mb-2" />
-            <h3 className="font-medium text-gray-900">New Sale</h3>
-            <p className="text-sm text-gray-600 mt-1">Process a new transaction</p>
+            <h3 className="font-medium text-gray-900">Nouvelle Vente</h3>
+            <p className="text-sm text-gray-600 mt-1">Traiter une nouvelle transaction</p>
           </a>
           <a
             href="/purchases"
             className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <DollarSign className="h-8 w-8 text-blue-600 mb-2" />
-            <h3 className="font-medium text-gray-900">Record Purchase</h3>
-            <p className="text-sm text-gray-600 mt-1">Add new inventory</p>
+            <h3 className="font-medium text-gray-900">Enregistrer un Achat</h3>
+            <p className="text-sm text-gray-600 mt-1">Ajouter un nouvel inventaire</p>
           </a>
           <a
             href="/reports"
             className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <DollarSign className="h-8 w-8 text-blue-600 mb-2" />
-            <h3 className="font-medium text-gray-900">View Reports</h3>
-            <p className="text-sm text-gray-600 mt-1">Check performance</p>
+            <h3 className="font-medium text-gray-900">Voir les Rapports</h3>
+            <p className="text-sm text-gray-600 mt-1">Vérifier les performances</p>
           </a>
         </div>
       </div>

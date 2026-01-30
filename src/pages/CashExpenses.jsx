@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Wallet, Plus, TrendingDown, Calendar, DollarSign } from 'lucide-react';
 import { getCashBalance, getCashMovements, createExpense, getExpenses } from '../api/services';
 import { formatCurrency, formatDateTime } from '../utils/format';
@@ -29,9 +29,9 @@ export default function CashExpenses() {
 
   useEffect(() => {
     fetchData();
-  }, [dateRange]);
+  }, [fetchData]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -44,11 +44,11 @@ export default function CashExpenses() {
       setExpenses(expensesRes.data);
       setMovements(movementsRes.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load cash data');
+      setError(err.response?.data?.error || 'Échec du chargement des données de caisse');
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
@@ -59,13 +59,13 @@ export default function CashExpenses() {
         description: expenseForm.description,
         amount: parseFloat(expenseForm.amount),
       });
-      toast.success('Expense recorded successfully');
+      toast.success('Dépense enregistrée avec succès');
       setShowExpenseForm(false);
       setExpenseForm({ description: '', amount: '' });
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to record expense');
-      toast.error('Failed to record expense');
+      setError(err.response?.data?.error || 'Échec de l\'enregistrement de la dépense');
+      toast.error('Échec de l\'enregistrement de la dépense');
     } finally {
       setSubmitting(false);
     }
@@ -79,15 +79,15 @@ export default function CashExpenses() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cash & Expenses</h1>
-          <p className="text-gray-600 mt-1">Manage cash flow and expenses</p>
+          <h1 className="text-2xl font-bold text-gray-900">Caisse & Dépenses</h1>
+          <p className="text-gray-600 mt-1">Gérer les flux de trésorerie et les dépenses</p>
         </div>
         <button
           onClick={() => setShowExpenseForm(!showExpenseForm)}
           className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
         >
           <Plus className="h-5 w-5" />
-          {showExpenseForm ? 'Cancel' : 'Record Expense'}
+          {showExpenseForm ? 'Annuler' : 'Enregistrer Dépense'}
         </button>
       </div>
 
@@ -96,13 +96,13 @@ export default function CashExpenses() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <StatCard
-          title="Cash Balance"
+          title="Solde Caisse"
           value={formatCurrency(cashBalance)}
           icon={Wallet}
           className="card-glass hover-lift"
         />
         <StatCard
-          title="Today's Expenses"
+          title="Dépenses du Jour"
           value={formatCurrency(totalExpenses)}
           icon={TrendingDown}
           className="card-glass hover-lift"
@@ -118,7 +118,7 @@ export default function CashExpenses() {
       {/* Expense Form */}
       {showExpenseForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 animate-scale-in">
-          <h2 className="text-lg font-semibold mb-4">Record New Expense</h2>
+          <h2 className="text-lg font-semibold mb-4">Enregistrer Nouvelle Dépense</h2>
           <form onSubmit={handleSubmitExpense}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -130,13 +130,13 @@ export default function CashExpenses() {
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Electricity bill, Rent, Supplies"
+                  placeholder="ex: Facture électricité, Loyer, Fournitures"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (FBu) *
+                  Montant (FBu) *
                 </label>
                 <input
                   type="number"
@@ -155,7 +155,7 @@ export default function CashExpenses() {
               disabled={submitting}
               className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300"
             >
-              {submitting ? 'Recording...' : 'Record Expense'}
+              {submitting ? 'Enregistrement...' : 'Enregistrer Dépense'}
             </button>
           </form>
         </div>
@@ -165,12 +165,12 @@ export default function CashExpenses() {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Filter by Date</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Filtrer par Date</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Start Date
+              Date Début
             </label>
             <input
               type="date"
@@ -181,7 +181,7 @@ export default function CashExpenses() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Date
+              Date Fin
             </label>
             <input
               type="date"
@@ -195,14 +195,14 @@ export default function CashExpenses() {
 
       {/* Expenses Table */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Expenses</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Dépenses</h2>
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -210,7 +210,7 @@ export default function CashExpenses() {
                 <tr>
                   <td colSpan="3" className="px-6 py-12 text-center text-gray-500">
                     <TrendingDown className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>No expenses recorded</p>
+                    <p>Aucune dépense enregistrée</p>
                   </td>
                 </tr>
               ) : (
@@ -235,15 +235,15 @@ export default function CashExpenses() {
 
       {/* Cash Movements */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Cash Movements</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mouvements de Caisse</h2>
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -251,7 +251,7 @@ export default function CashExpenses() {
                 <tr>
                   <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
                     <Wallet className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>No cash movements</p>
+                    <p>Aucun mouvement de caisse</p>
                   </td>
                 </tr>
               ) : (
@@ -262,8 +262,8 @@ export default function CashExpenses() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${movement.type === 'IN'
-                          ? 'bg-green-50 text-green-600'
-                          : 'bg-red-50 text-red-600'
+                        ? 'bg-green-50 text-green-600'
+                        : 'bg-red-50 text-red-600'
                         }`}>
                         {movement.type}
                       </span>

@@ -39,7 +39,7 @@ export default function Purchases() {
       setSuppliers(suppliersRes.data);
       setProducts(productsRes.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load data');
+      setError(err.response?.data?.error || 'Échec du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -78,10 +78,10 @@ export default function Purchases() {
         notes: '',
       });
       fetchData();
-      toast.success('Purchase recorded successfully');
+      toast.success('Achat enregistré avec succès');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create purchase');
-      toast.error('Failed to create purchase');
+      setError(err.response?.data?.error || 'Échec de l\'enregistrement de l\'achat');
+      toast.error('Échec de l\'enregistrement de l\'achat');
     } finally {
       setSubmitting(false);
     }
@@ -93,14 +93,14 @@ export default function Purchases() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Purchases</h1>
-          <p className="text-gray-600 mt-1">Record inventory purchases</p>
+          <h1 className="text-2xl font-bold text-gray-900">Achats</h1>
+          <p className="text-gray-600 mt-1">Enregistrer les achats auprès des fournisseurs</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          {showForm ? 'Cancel' : 'New Purchase'}
+          {showForm ? 'Annuler' : 'Nouvel Achat'}
         </button>
       </div>
 
@@ -108,12 +108,12 @@ export default function Purchases() {
 
       {showForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">New Purchase</h2>
+          <h2 className="text-lg font-semibold mb-4">Nouvel Achat</h2>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Supplier
+                  Fournisseur
                 </label>
                 <select
                   value={formData.supplierId}
@@ -121,7 +121,7 @@ export default function Purchases() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
                 >
-                  <option value="">Select supplier</option>
+                  <option value="">Sélectionner fournisseur</option>
                   {suppliers.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
@@ -136,20 +136,20 @@ export default function Purchases() {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Optional notes"
+                  placeholder="Notes optionnelles"
                 />
               </div>
             </div>
 
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">Items</label>
+                <label className="block text-sm font-medium text-gray-700">Articles</label>
                 <button
                   type="button"
                   onClick={addItem}
                   className="text-sm text-blue-600 hover:text-blue-700"
                 >
-                  + Add Item
+                  + Ajouter Article
                 </button>
               </div>
 
@@ -161,7 +161,7 @@ export default function Purchases() {
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   >
-                    <option value="">Select product</option>
+                    <option value="">Sélectionner produit</option>
                     {products.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
@@ -171,7 +171,7 @@ export default function Purchases() {
                     min="1"
                     value={item.quantityBoxes}
                     onChange={(e) => updateItem(index, 'quantityBoxes', parseInt(e.target.value))}
-                    placeholder="Boxes"
+                    placeholder="Cartons"
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -180,7 +180,7 @@ export default function Purchases() {
                     min="0"
                     value={item.unitPriceBox}
                     onChange={(e) => updateItem(index, 'unitPriceBox', parseFloat(e.target.value))}
-                    placeholder="Price per box"
+                    placeholder="Prix par carton"
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -190,7 +190,7 @@ export default function Purchases() {
                     className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
                     disabled={formData.items.length === 1}
                   >
-                    Remove
+                    Supprimer
                   </button>
                 </div>
               ))}
@@ -201,7 +201,7 @@ export default function Purchases() {
               disabled={submitting}
               className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
             >
-              {submitting ? 'Creating...' : 'Create Purchase'}
+              {submitting ? 'Création...' : 'Valider l\'Achat'}
             </button>
           </form>
         </div>
@@ -212,9 +212,9 @@ export default function Purchases() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fournisseur</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coût Total</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
             </tr>
           </thead>
@@ -223,7 +223,7 @@ export default function Purchases() {
               <tr>
                 <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                   <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                  <p>No purchases recorded</p>
+                  <p>Aucun achat enregistré</p>
                 </td>
               </tr>
             ) : (

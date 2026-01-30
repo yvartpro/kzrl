@@ -34,7 +34,7 @@ export default function Settings() {
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load data');
+      setError(err.response?.data?.error || 'Échec du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function Settings() {
       setCategoryName('');
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create category');
+      setError(err.response?.data?.error || 'Échec de la création de la catégorie');
     } finally {
       setCategorySubmitting(false);
     }
@@ -64,7 +64,7 @@ export default function Settings() {
       setSupplierForm({ name: '', contact: '' });
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create supplier');
+      setError(err.response?.data?.error || 'Échec de la création du fournisseur');
     } finally {
       setSupplierSubmitting(false);
     }
@@ -77,9 +77,9 @@ export default function Settings() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <SettingsIcon className="h-7 w-7" />
-          Settings
+          Paramètres
         </h1>
-        <p className="text-gray-600 mt-1">Manage categories, suppliers, and system settings</p>
+        <p className="text-gray-600 mt-1">Gérer les catégories, fournisseurs et paramètres système</p>
       </div>
 
       {error && <ErrorMessage message={error} />}
@@ -90,22 +90,22 @@ export default function Settings() {
           <button
             onClick={() => setActiveTab('categories')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'categories'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
             <Tag className="h-4 w-4 inline mr-2" />
-            Categories
+            Catégories
           </button>
           <button
             onClick={() => setActiveTab('suppliers')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'suppliers'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
             <Users className="h-4 w-4 inline mr-2" />
-            Suppliers
+            Fournisseurs
           </button>
         </nav>
       </div>
@@ -115,17 +115,17 @@ export default function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Category Form */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Category</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajouter une Catégorie</h2>
             <form onSubmit={handleCreateCategory}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Name
+                  Nom de la Catégorie
                 </label>
                 <input
                   type="text"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  placeholder="e.g., Beers, Soft Drinks, Snacks"
+                  placeholder="ex: Bières, Jus, Snacks"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -136,7 +136,7 @@ export default function Settings() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
               >
                 <Plus className="h-5 w-5" />
-                {categorySubmitting ? 'Creating...' : 'Create Category'}
+                {categorySubmitting ? 'Création...' : 'Créer Catégorie'}
               </button>
             </form>
           </div>
@@ -144,11 +144,11 @@ export default function Settings() {
           {/* Categories List */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Existing Categories ({categories.length})
+              Catégories Existantes ({categories.length})
             </h2>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {categories.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No categories yet</p>
+                <p className="text-gray-500 text-center py-8">Aucune catégorie</p>
               ) : (
                 categories.map((category) => (
                   <div
@@ -172,30 +172,30 @@ export default function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Supplier Form */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Supplier</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajouter un Fournisseur</h2>
             <form onSubmit={handleCreateSupplier}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Supplier Name
+                  Nom du Fournisseur
                 </label>
                 <input
                   type="text"
                   value={supplierForm.name}
                   onChange={(e) => setSupplierForm({ ...supplierForm, name: e.target.value })}
-                  placeholder="e.g., ABC Distributors"
+                  placeholder="ex: ABC Distributeurs"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contact (Phone/Email)
+                  Contact (Tél/Email)
                 </label>
                 <input
                   type="text"
                   value={supplierForm.contact}
                   onChange={(e) => setSupplierForm({ ...supplierForm, contact: e.target.value })}
-                  placeholder="e.g., +257 79 123 456"
+                  placeholder="ex: +257 79 123 456"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -205,7 +205,7 @@ export default function Settings() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
               >
                 <Plus className="h-5 w-5" />
-                {supplierSubmitting ? 'Creating...' : 'Create Supplier'}
+                {supplierSubmitting ? 'Création...' : 'Créer Fournisseur'}
               </button>
             </form>
           </div>
@@ -213,11 +213,11 @@ export default function Settings() {
           {/* Suppliers List */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Existing Suppliers ({suppliers.length})
+              Fournisseurs Existants ({suppliers.length})
             </h2>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {suppliers.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No suppliers yet</p>
+                <p className="text-gray-500 text-center py-8">Aucun fournisseur</p>
               ) : (
                 suppliers.map((supplier) => (
                   <div
@@ -243,12 +243,12 @@ export default function Settings() {
       <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
           <Users className="h-5 w-5" />
-          User Roles & Permissions
+          Rôles & Permissions Utilisateurs
         </h3>
         <div className="space-y-3 text-sm text-blue-800">
           <p>
-            <strong>Role Management:</strong> The backend has a User & Role system built in.
-            Roles are stored in the database and linked to users.
+            <strong>Gestion des Rôles :</strong> Le backend dispose d'un système Utilisateur & Rôle intégré.
+            Les rôles sont stockés dans la base de données et liés aux utilisateurs.
           </p>
           <div className="bg-white rounded p-3 mt-2">
             <p className="font-medium mb-2">Backend Models:</p>
@@ -259,14 +259,14 @@ export default function Settings() {
             </ul>
           </div>
           <p className="mt-3">
-            <strong>To implement full role management:</strong>
+            <strong>Pour implémenter la gestion complète des rôles :</strong>
           </p>
           <ol className="list-decimal list-inside space-y-1 ml-2">
-            <li>Create user management endpoints in backend</li>
-            <li>Add authentication (JWT/sessions)</li>
-            <li>Create login page in dashboard</li>
-            <li>Add role-based UI visibility (hide features based on role)</li>
-            <li>Add user management page to create/edit users and assign roles</li>
+            <li>Créer des endpoints de gestion des utilisateurs dans le backend</li>
+            <li>Ajouter l'authentification (JWT/sessions)</li>
+            <li>Créer une page de connexion dans le tableau de bord</li>
+            <li>Ajouter une visibilité d'interface basée sur les rôles</li>
+            <li>Ajouter une page de gestion des utilisateurs pour créer/éditer et assigner des rôles</li>
           </ol>
         </div>
       </div>

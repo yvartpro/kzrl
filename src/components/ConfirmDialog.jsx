@@ -6,8 +6,8 @@ export default function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = 'Confirmer',
+  cancelText = 'Annuler',
   variant = 'danger', // 'danger' | 'warning' | 'info'
   loading = false,
 }) {
@@ -74,7 +74,7 @@ export default function ConfirmDialog({
             disabled={loading}
             className={`flex-1 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 ${styles.button}`}
           >
-            {loading ? 'Processing...' : confirmText}
+            {loading ? 'Traitement...' : confirmText}
           </button>
         </div>
       </div>

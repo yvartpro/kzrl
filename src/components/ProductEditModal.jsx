@@ -76,12 +76,12 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
       });
 
       await updateProduct(product.id, updates);
-      toast.success('Product updated successfully');
+      toast.success('Produit mis à jour avec succès');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Update product error:', error);
-      toast.error(error.response?.data?.error || 'Failed to update product');
+      toast.error(error.response?.data?.error || 'Échec de la mise à jour du produit');
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Edit Product</h2>
+          <h2 className="text-xl font-bold text-gray-900">Modifier Produit</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -107,7 +107,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Product Name */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Name
+                Nom du Produit
               </label>
               <input
                 type="text"
@@ -122,7 +122,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
+                Catégorie
               </label>
               <select
                 name="categoryId"
@@ -130,7 +130,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select Category</option>
+                <option value="">Sélectionner Catégorie</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
@@ -140,7 +140,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Supplier */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Supplier
+                Fournisseur
               </label>
               <select
                 name="supplierId"
@@ -148,7 +148,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select Supplier</option>
+                <option value="">Sélectionner Fournisseur</option>
                 {suppliers.map(sup => (
                   <option key={sup.id} value={sup.id}>{sup.name}</option>
                 ))}
@@ -158,7 +158,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Box Quantity */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Box Quantity
+                Quantité Carton
               </label>
               <input
                 type="number"
@@ -173,7 +173,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Units per Box */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Units per Box
+                Unités par Carton
               </label>
               <input
                 type="number"
@@ -188,7 +188,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Unit Cost */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit Cost (Prix de Revient)
+                Coût Unitaire (Prix de Revient)
               </label>
               <input
                 type="number"
@@ -204,7 +204,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             {/* Selling Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Selling Price
+                Prix de Vente
               </label>
               <input
                 type="number"
@@ -221,11 +221,11 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
             <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Margin (FBu)</p>
+                  <p className="text-sm text-gray-600">Marge (FBu)</p>
                   <p className="text-lg font-bold text-gray-900">{margin.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Margin (%)</p>
+                  <p className="text-sm text-gray-600">Marge (%)</p>
                   <p className="text-lg font-bold text-gray-900">{marginPercent}%</p>
                 </div>
               </div>
@@ -238,14 +238,14 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              Annuler
             </button>
             <button
               type="submit"
               disabled={loading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Updating...' : 'Update Product'}
+              {loading ? 'Mise à jour...' : 'Mettre à jour'}
             </button>
           </div>
         </form>

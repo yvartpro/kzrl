@@ -8,7 +8,7 @@ export default function ErrorMessage({ message }) {
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
         <div>
-          <h3 className="text-sm font-medium text-red-800">Error</h3>
+          <h3 className="text-sm font-medium text-red-800">Erreur</h3>
           <p className="text-sm text-red-700 mt-1">{message}</p>
         </div>
       </div>

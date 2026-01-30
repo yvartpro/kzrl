@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Calendar, FileText, TrendingUp, Package, DollarSign, Download } from 'lucide-react';
-import { getDailyReport, getStockValuation, getCashMovements, getSales, getExpenses } from '../api/services';
+import { getDailyReport, getStockValuation, getSales, getExpenses } from '../api/services';
 import { formatCurrency, formatDateTime } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
@@ -17,40 +17,20 @@ export default function Reports() {
 
   const toast = useToast();
 
-  useEffect(() => {
-    fetchReports();
-  }, [selectedDate]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [dailyRes, stockRes] = await Promise.all([
+      const [dailyRes, stockRes, salesRes, expensesRes] = await Promise.all([
         getDailyReport(selectedDate),
         getStockValuation(),
+        getSales(),
+        getExpenses({ startDate: selectedDate, endDate: selectedDate }),
       ]);
 
       setDailyReport(dailyRes.data);
       setStockValue(stockRes.data);
-
-      // Fetch journal entries (sales, expenses, cash movements)
-      await fetchJournalEntries();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load reports');
-      toast.error('Failed to load reports');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchJournalEntries = async () => {
-    try {
-      const [salesRes, expensesRes, movementsRes] = await Promise.all([
-        getSales(),
-        getExpenses({ startDate: selectedDate, endDate: selectedDate }),
-        getCashMovements({ startDate: selectedDate, endDate: selectedDate }),
-      ]);
 
       // Combine and format all transactions as journal entries
       const entries = [];
@@ -63,7 +43,7 @@ export default function Reports() {
           runningBalance += amount;
           entries.push({
             date: sale.createdAt,
-            description: `Sale - ${sale.paymentMethod} `,
+            description: `Vente - ${sale.paymentMethod} `,
             reference: `INV - ${sale.id} `,
             debit: amount,
             credit: 0,
@@ -100,9 +80,16 @@ export default function Reports() {
 
       setJournalEntries(entries);
     } catch (err) {
-      console.error('Failed to fetch journal entries:', err);
+      setError(err.response?.data?.error || 'Échec du chargement des rapports');
+      toast.error('Échec du chargement des rapports');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [selectedDate, toast]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
   const handlePrint = () => {
     window.print();
@@ -117,8 +104,8 @@ export default function Reports() {
     <div>
       <div className="flex items-center justify-between mb-6 no-print">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financial Reports</h1>
-          <p className="text-gray-600 mt-1">Accounting journal and daily summaries</p>
+          <h1 className="text-2xl font-bold text-gray-900">Rapports Financiers</h1>
+          <p className="text-gray-600 mt-1">Journal comptable et résumés quotidiens</p>
         </div>
         <div className="flex gap-3">
           <input
@@ -132,7 +119,7 @@ export default function Reports() {
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Download className="h-5 w-5" />
-            Print
+            Imprimer
           </button>
         </div>
       </div>
@@ -142,13 +129,13 @@ export default function Reports() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
         <StatCard
-          title="Total Sales"
+          title="Ventes Totales"
           value={formatCurrency(dailyReport?.totalSales || 0)}
           icon={DollarSign}
           className="card-glass hover-lift"
         />
         <StatCard
-          title="Total Profit"
+          title="Bénéfice Total"
           value={formatCurrency(dailyReport?.totalProfit || 0)}
           icon={TrendingUp}
           className="card-glass hover-lift"
@@ -160,7 +147,7 @@ export default function Reports() {
           className="card-glass hover-lift"
         />
         <StatCard
-          title="Stock Value"
+          title="Valeur du Stock"
           value={formatCurrency(stockValue?.totalValue || 0)}
           icon={Package}
           className="card-glass hover-lift"
@@ -172,8 +159,8 @@ export default function Reports() {
         <div className="p-6 border-b bg-gray-50">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">General Journal</h2>
-              <p className="text-sm text-gray-600 mt-1">Date: {new Date(selectedDate).toLocaleDateString('en-US', {
+              <h2 className="text-xl font-bold text-gray-900">Journal Général</h2>
+              <p className="text-sm text-gray-600 mt-1">Date : {new Date(selectedDate).toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -189,22 +176,22 @@ export default function Reports() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Date & Time
+                  Date & Heure
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Description
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Reference
+                  Référence
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Debit (FBu)
+                  Débit (FBu)
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Credit (FBu)
+                  Crédit (FBu)
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Balance (FBu)
+                  Solde (FBu)
                 </th>
               </tr>
             </thead>
@@ -213,7 +200,7 @@ export default function Reports() {
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
                     <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>No transactions recorded for this date</p>
+                    <p>Aucune transaction enregistrée pour cette date</p>
                   </td>
                 </tr>
               ) : (
@@ -274,17 +261,17 @@ export default function Reports() {
       {stockValue && stockValue.items && stockValue.items.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="p-6 border-b bg-gray-50">
-            <h2 className="text-xl font-bold text-gray-900">Stock Valuation</h2>
-            <p className="text-sm text-gray-600 mt-1">Current inventory value</p>
+            <h2 className="text-xl font-bold text-gray-900">Valorisation du Stock</h2>
+            <p className="text-sm text-gray-600 mt-1">Valeur actuelle de l'inventaire</p>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Product</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Quantity</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Unit Cost</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Total Value</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Produit</th>
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Quantité</th>
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Coût Unitaire</th>
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Valeur Totale</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -299,7 +286,7 @@ export default function Reports() {
                   </tr>
                 ))}
                 <tr className="bg-gray-100 font-bold">
-                  <td colSpan="3" className="px-6 py-4 text-sm text-gray-900 uppercase">Total Stock Value</td>
+                  <td colSpan="3" className="px-6 py-4 text-sm text-gray-900 uppercase">Valeur Totale du Stock</td>
                   <td className="px-6 py-4 text-sm text-right text-gray-900">
                     {formatCurrency(stockValue.totalValue)}
                   </td>
