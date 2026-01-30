@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Package } from 'lucide-react';
 import { getPurchases, getSuppliers, getProducts, createPurchase } from '../api/services';
 import { formatCurrency, formatDateTime } from '../utils/format';
+import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -13,6 +14,8 @@ export default function Purchases() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const toast = useToast();
 
   const [formData, setFormData] = useState({
     supplierId: '',
@@ -75,8 +78,10 @@ export default function Purchases() {
         notes: '',
       });
       fetchData();
+      toast.success('Purchase recorded successfully');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create purchase');
+      toast.error('Failed to create purchase');
     } finally {
       setSubmitting(false);
     }

@@ -20,10 +20,15 @@ export const createPurchase = (data) => api.post('/purchases', data);
 export const getSales = () => api.get('/sales');
 export const createSale = (data) => api.post('/sales', data);
 
+// Stock
+export const adjustStock = (data) => api.post('/stock/adjust', data);
+export const getStockMovements = (productId) => api.get(`/stock/movements/${productId}`);
+
 // Cash
 export const getCashBalance = () => api.get('/cash/balance');
 export const getCashMovements = (params) => api.get('/cash/movements', { params });
 export const createExpense = (data) => api.post('/cash/expenses', data);
+export const getExpenses = (params) => api.get('/cash/expenses', { params });
 
 // Reports
 export const getDailyReport = (date) => api.get('/reports/daily', { params: { date } });

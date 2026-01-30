@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Package, Plus, Search, X } from 'lucide-react';
-import { getProducts, getCategories, createProduct } from '../api/services';
+import { Package, Plus, Search, X, Edit3 } from 'lucide-react';
+import { getProducts, getCategories, createProduct, adjustStock } from '../api/services';
 import { formatCurrency, getStockStatus, getStockStatusColor } from '../utils/format';
+import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
+import StockAdjustmentModal from '../components/StockAdjustmentModal';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -14,6 +16,10 @@ export default function Products() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const toast = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -70,11 +76,29 @@ export default function Products() {
         sellingPrice: 0,
       });
       fetchData();
+      toast.success('Product created successfully');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create product');
+      toast.error('Failed to create product');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleAdjustStock = async (adjustmentData) => {
+    try {
+      await adjustStock(adjustmentData);
+      toast.success('Stock adjusted successfully');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to adjust stock');
+      throw err;
+    }
+  };
+
+  const openAdjustModal = (product) => {
+    setSelectedProduct(product);
+    setShowAdjustModal(true);
   };
 
   const filteredProducts = products.filter(product => {
@@ -291,12 +315,15 @@ export default function Products() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
                     <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
                     <p>No products found</p>
                   </td>
@@ -333,6 +360,15 @@ export default function Products() {
                           {status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => openAdjustModal(product)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                          Adjust
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -341,6 +377,14 @@ export default function Products() {
           </table>
         </div>
       </div>
+
+      {/* Stock Adjustment Modal */}
+      <StockAdjustmentModal
+        isOpen={showAdjustModal}
+        onClose={() => setShowAdjustModal(false)}
+        product={selectedProduct}
+        onAdjust={handleAdjustStock}
+      />
     </div>
   );
 }

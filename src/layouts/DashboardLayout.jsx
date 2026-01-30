@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X } from 'lucide-react';
+import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Purchases', href: '/purchases', icon: ShoppingCart },
   { name: 'Sales', href: '/sales', icon: DollarSign },
+  { name: 'Cash & Expenses', href: '/cash-expenses', icon: Wallet },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { getProducts, createSale } from '../api/services';
 import { formatCurrency } from '../utils/format';
+import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -14,6 +15,8 @@ export default function Sales() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const toast = useToast();
 
   useEffect(() => {
     fetchProducts();
@@ -85,12 +88,14 @@ export default function Sales() {
 
       setSuccess(true);
       setCart([]);
+      toast.success('Sale completed successfully!');
       setTimeout(() => {
         setSuccess(false);
         fetchProducts();
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to process sale');
+      toast.error(err.response?.data?.error || 'Failed to process sale');
     } finally {
       setSubmitting(false);
     }
