@@ -181,9 +181,6 @@ export default function Reports() {
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Référence
-                </th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Débit (FBu)
                 </th>
@@ -213,9 +210,6 @@ export default function Reports() {
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {entry.description}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
-                        {entry.reference}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                         {entry.debit > 0 ? (
                           <span className="text-green-600">{formatCurrency(entry.debit)}</span>
@@ -237,7 +231,7 @@ export default function Reports() {
                   ))}
                   {/* Totals Row */}
                   <tr className="bg-gray-100 font-bold">
-                    <td colSpan="3" className="px-6 py-4 text-sm text-gray-900 uppercase">
+                    <td colSpan="2" className="px-6 py-4 text-sm text-gray-900 uppercase">
                       Total
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-700">
