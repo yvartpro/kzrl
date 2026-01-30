@@ -27,10 +27,6 @@ export default function CashExpenses() {
 
   const toast = useToast();
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -49,6 +45,10 @@ export default function CashExpenses() {
       setLoading(false);
     }
   }, [dateRange]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
