@@ -1,9 +1,25 @@
-const App = () => {
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import DashboardLayout from './layouts/DashboardLayout';
+import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+import Purchases from './pages/Purchases';
+import Sales from './pages/Sales';
+import Reports from './pages/Reports';
+
+function App() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">App</h1>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="products" element={<Products />} />
+          <Route path="purchases" element={<Purchases />} />
+          <Route path="sales" element={<Sales />} />
+          <Route path="reports" element={<Reports />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
