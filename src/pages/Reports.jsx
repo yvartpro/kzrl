@@ -128,25 +128,25 @@ export default function Reports() {
       {error && <ErrorMessage message={error} />}
 
       {/* Global Capital Indicator (Banner style for visibility) */}
-      <div className="bg-indigo-600 rounded-lg p-6 mb-6 text-white shadow-lg overflow-hidden relative">
+      <div className="bg-white rounded-lg p-6 mb-6 text-slate-900 shadow-lg overflow-hidden relative">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            <h2 className="text-indigo-100 text-sm font-bold uppercase tracking-wider mb-1">Capital Global du Bar</h2>
+            <h2 className="text-slate-900 text-sm font-bold uppercase tracking-wider mb-1">Capital Global du Bar</h2>
             <div className="text-4xl font-extrabold">{formatCurrency(capitalData.globalCapital)}</div>
           </div>
-          <div className="flex gap-8 border-l border-indigo-400 pl-8 h-full">
+          <div className="flex gap-8 border-l border-slate-400 pl-8 h-full">
             <div>
-              <p className="text-indigo-200 text-xs font-medium uppercase mb-1">Liquidités (Caisse)</p>
+              <p className="text-slate-900 text-xs font-medium uppercase mb-1">Liquidités (Caisse)</p>
               <p className="text-xl font-bold">{formatCurrency(capitalData.liquidAssets)}</p>
             </div>
             <div>
-              <p className="text-indigo-200 text-xs font-medium uppercase mb-1">Valeur du Stock</p>
+              <p className="text-slate-700 text-xs font-medium uppercase mb-1">Valeur du Stock</p>
               <p className="text-xl font-bold">{formatCurrency(capitalData.stockValue)}</p>
             </div>
           </div>
         </div>
         {/* Decorative background circle */}
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500 rounded-full opacity-20"></div>
+        <div className="absolute -right-20 -top-20 w-64 h-64 bg-slate-500 rounded-full opacity-20"></div>
       </div>
 
       {/* Summary Cards */}

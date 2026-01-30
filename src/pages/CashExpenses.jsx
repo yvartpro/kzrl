@@ -115,80 +115,105 @@ export default function CashExpenses() {
         />
       </div>
 
-      {/* Expense Form */}
-      {showExpenseForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 animate-scale-in">
-          <h2 className="text-lg font-semibold mb-4">Enregistrer Nouvelle Dépense</h2>
-          <form onSubmit={handleSubmitExpense}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
-                </label>
-                <input
-                  type="text"
-                  value={expenseForm.description}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="ex: Facture électricité, Loyer, Fournitures"
-                  required
-                />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-start">
+        {/* Expense Form */}
+        <div className="lg:col-span-2">
+          {showExpenseForm ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm animate-scale-in h-full">
+              <div className="flex items-center gap-2 mb-6 text-red-600">
+                <TrendingDown className="h-5 w-5" />
+                <h2 className="text-lg font-bold">Nouvelle Dépense</h2>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Montant (FBu) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={expenseForm.amount}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
+              <form onSubmit={handleSubmitExpense} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={expenseForm.description}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all outline-none"
+                      placeholder="ex: Facture électricité, Loyer..."
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Montant (FBu) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={expenseForm.amount}
+                        onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all outline-none"
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md shadow-red-100 disabled:bg-gray-300 flex items-center justify-center gap-2"
+                >
+                  {submitting ? 'Enregistrement...' : (
+                    <>
+                      <Plus className="h-5 w-5" />
+                      Enregistrer la Dépense
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300"
-            >
-              {submitting ? 'Enregistrement...' : 'Enregistrer Dépense'}
-            </button>
-          </form>
+          ) : (
+            <div className="bg-gray-50 rounded-2xl border border-dashed border-gray-300 p-8 flex flex-col items-center justify-center text-center h-full">
+              <TrendingDown className="h-10 w-10 text-gray-300 mb-2" />
+              <p className="text-gray-500 font-medium">Cliquez sur "Enregistrer Dépense" pour ajouter un frais.</p>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Date Range Filter */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Filtrer par Date</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date Début
-            </label>
-            <input
-              type="date"
-              value={dateRange.startDate}
-              onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date Fin
-            </label>
-            <input
-              type="date"
-              value={dateRange.endDate}
-              onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        {/* Date Range Filter */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm h-full">
+            <div className="flex items-center gap-2 mb-6 text-gray-700">
+              <Calendar className="h-5 w-5" />
+              <h2 className="text-lg font-bold">Filtrer par Date</h2>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-2">
+                  Date Début
+                </label>
+                <input
+                  type="date"
+                  value={dateRange.startDate}
+                  onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-2">
+                  Date Fin
+                </label>
+                <input
+                  type="date"
+                  value={dateRange.endDate}
+                  onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+              <p className="text-xs text-gray-400 italic text-center pt-2">
+                Les rapports et transactions seront mis à jour automatiquement.
+              </p>
+            </div>
           </div>
         </div>
       </div>
