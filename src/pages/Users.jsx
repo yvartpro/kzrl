@@ -3,8 +3,11 @@ import { UserPlus, Shield, UserX, UserCheck, Search, Users as UsersIcon, Lock, S
 import { getUsers, createUser, toggleUserStatus, getRoles, updateUser, payStaff } from '../api/services';
 import { useToast } from '../components/Toast';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Users() {
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'ADMIN';
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,13 +187,15 @@ export default function Users() {
                       >
                         <DollarSign className="h-4 w-4" />
                       </button>
-                      <button
-                        onClick={() => handleToggleStatus(user.id)}
-                        className={`text-sm font-semibold transition-colors ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
-                          }`}
-                      >
-                        {user.isActive ? 'Suspendre' : 'Activer'}
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleToggleStatus(user.id)}
+                          className={`text-sm font-semibold transition-colors ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
+                            }`}
+                        >
+                          {user.isActive ? 'Suspendre' : 'Activer'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -249,7 +254,8 @@ export default function Users() {
                   <input
                     type="text"
                     required
-                    className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500"
+                    disabled={editingUser && !isAdmin}
+                    className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   />
@@ -262,8 +268,9 @@ export default function Users() {
                   <input
                     type="password"
                     required={!editingUser}
-                    className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500"
-                    placeholder={editingUser ? 'Laisser vide pour ne pas changer' : ''}
+                    disabled={editingUser && !isAdmin}
+                    className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
+                    placeholder={editingUser ? (isAdmin ? 'Laisser vide pour ne pas changer' : '********') : ''}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
@@ -286,15 +293,19 @@ export default function Users() {
                 <label className="block text-sm font-bold text-gray-700 mb-1">Rôle</label>
                 <select
                   required
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500"
+                  disabled={editingUser && !isAdmin}
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
                   value={formData.roleId}
                   onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
                 >
-                  <option value="">Sélectionnez un rôle</option>
+                  {!editingUser && <option value="">Sélectionnez un rôle</option>}
                   {roles.map(role => (
                     <option key={role.id} value={role.id}>{role.name}</option>
                   ))}
                 </select>
+                {!isAdmin && !editingUser && roles.length === 1 && (
+                  <p className="text-xs text-indigo-600 mt-1">En tant que manager, vous ne pouvez créer que des serveurs.</p>
+                )}
               </div>
               <div className="flex gap-3 pt-4">
                 <button
