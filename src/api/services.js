@@ -44,6 +44,8 @@ export const getGlobalCapital = () => api.get('/reports/global-capital');
 export const getUsers = () => api.get('/users');
 export const createUser = (data) => api.post('/users', data);
 export const toggleUserStatus = (id) => api.patch(`/users/${id}/toggle`);
+export const updateUser = (id, data) => api.patch(`/users/${id}`, data);
+export const payStaff = (data) => api.post('/system/pay-staff', data);
 export const getRoles = () => api.get('/roles');
 export const changePassword = (data) => api.post('/auth/change-password', data);
 
