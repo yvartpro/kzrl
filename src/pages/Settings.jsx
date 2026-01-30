@@ -3,6 +3,8 @@ import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Sav
 import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance } from '../api/services';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../components/Toast';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Settings() {
   const [categories, setCategories] = useState([]);
@@ -28,6 +30,14 @@ export default function Settings() {
   const [cashBalance, setCashBalance] = useState(0);
   const [initializationLoading, setInitializationLoading] = useState(false);
   const [stockInitValues, setStockInitValues] = useState({}); // { productId: quantity }
+
+  const toast = useToast();
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { }
+  });
 
   useEffect(() => {
     fetchData();
@@ -68,6 +78,7 @@ export default function Settings() {
       setError(null);
       await createCategory({ name: categoryName });
       setCategoryName('');
+      toast.success('Catégorie créée avec succès');
       fetchData();
     } catch (err) {
       setError(err.response?.data?.error || 'Échec de la création de la catégorie');
@@ -83,6 +94,7 @@ export default function Settings() {
       setError(null);
       await createSupplier(supplierForm);
       setSupplierForm({ name: '', contact: '' });
+      toast.success('Fournisseur créé avec succès');
       fetchData();
     } catch (err) {
       setError(err.response?.data?.error || 'Échec de la création du fournisseur');
@@ -103,7 +115,7 @@ export default function Settings() {
       await changePassword(passwordForm);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setError(null);
-      alert('Mot de passe mis à jour avec succès');
+      toast.success('Mot de passe mis à jour avec succès');
     } catch (err) {
       setError(err.response?.data?.error || 'Échec de la mise à jour du mot de passe');
     } finally {
@@ -111,33 +123,50 @@ export default function Settings() {
     }
   };
 
-  const handleInitializeCash = async (e) => {
+  const handleInitializeCash = (e) => {
     e.preventDefault();
-    try {
-      setInitializationLoading(true);
-      setError(null);
-      await initializeCash({ amount: parseFloat(cashInitForm.amount) });
-      alert('Solde de caisse initialisé avec succès');
-      fetchData();
-    } catch (err) {
-      setError(err.response?.data?.error || "Échec de l'initialisation du cash");
-    } finally {
-      setInitializationLoading(false);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Initialisation de la Caisse',
+      message: `Êtes-vous sûr de vouloir initialiser le solde de la caisse à ${cashInitForm.amount} FBu ? Cette opération sera enregistrée dans l'audit.`,
+      onConfirm: async () => {
+        try {
+          setInitializationLoading(true);
+          setError(null);
+          await initializeCash({ amount: parseFloat(cashInitForm.amount) });
+          toast.success('Solde de caisse initialisé avec succès');
+          fetchData();
+        } catch (err) {
+          setError(err.response?.data?.error || "Échec de l'initialisation du cash");
+        } finally {
+          setInitializationLoading(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
-  const handleInitializeStock = async (productId) => {
-    try {
-      setInitializationLoading(true);
-      setError(null);
-      await initializeStock({ productId, quantity: parseInt(stockInitValues[productId]) });
-      alert('Stock mis à jour avec succès');
-      fetchData();
-    } catch (err) {
-      setError(err.response?.data?.error || "Échec de l'initialisation du stock");
-    } finally {
-      setInitializationLoading(false);
-    }
+  const handleInitializeStock = (productId) => {
+    const product = products.find(p => p.id === productId);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Initialisation du Stock',
+      message: `Êtes-vous sûr de vouloir initialiser le stock de "${product?.name}" à ${stockInitValues[productId]} unités ?`,
+      onConfirm: async () => {
+        try {
+          setInitializationLoading(true);
+          setError(null);
+          await initializeStock({ productId, quantity: parseInt(stockInitValues[productId]) });
+          toast.success('Stock mis à jour avec succès');
+          fetchData();
+        } catch (err) {
+          setError(err.response?.data?.error || "Échec de l'initialisation du stock");
+        } finally {
+          setInitializationLoading(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   if (loading) return <LoadingSpinner />;
@@ -491,6 +520,16 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        loading={initializationLoading}
+        variant="warning"
+      />
     </div>
   );
 }
