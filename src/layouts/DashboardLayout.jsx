@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User } from 'lucide-react';
+import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Rapports', href: '/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Gestion Utilisateurs', href: '/users', icon: User, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Paramètres', href: '/settings', icon: Settings, roles: ['ADMIN'] },
+  { name: 'Documentation', href: '/documentation', icon: BookOpen },
 ];
 
 export default function DashboardLayout() {

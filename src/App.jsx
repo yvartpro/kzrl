@@ -12,6 +12,7 @@ import Settings from './pages/Settings';
 import CashExpenses from './pages/CashExpenses';
 import Login from './pages/Login';
 import Users from './pages/Users';
+import Documentation from './pages/Documentation';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="settings" element={<Settings />} />
+              <Route path="documentation" element={<Documentation />} />
             </Route>
 
             <Route path="/unauthorized" element={
