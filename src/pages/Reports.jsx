@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Calendar, FileText, TrendingUp, Package, DollarSign, Download } from 'lucide-react';
-import { getDailyReport, getStockValuation, getSales, getExpenses } from '../api/services';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { Calendar, FileText, TrendingUp, Package, DollarSign, Download, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getDailyReport, getStockValuation, getJournalReport } from '../api/services';
+import { formatCurrency } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -10,86 +10,85 @@ import StatCard from '../components/StatCard';
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyReport, setDailyReport] = useState(null);
-  const [stockValue, setStockValue] = useState(null);
-  const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Journal State
+  const [journalData, setJournalData] = useState({ entries: [], totalCount: 0, totalPages: 0, currentPage: 1 });
+  const [journalSearch, setJournalSearch] = useState('');
+  const [journalPage, setJournalPage] = useState(1);
+  const [journalLoading, setJournalLoading] = useState(false);
+
+  // Stock State
+  const [stockData, setStockData] = useState({ items: [], totalCount: 0, totalPages: 0, currentPage: 1, totalValue: 0 });
+  const [stockSearch, setStockSearch] = useState('');
+  const [stockPage, setStockPage] = useState(1);
+  const [stockLoading, setStockLoading] = useState(false);
+
   const toast = useToast();
 
-  const fetchReports = useCallback(async () => {
+  const fetchSummary = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      const [dailyRes, stockRes, salesRes, expensesRes] = await Promise.all([
-        getDailyReport(selectedDate),
-        getStockValuation(selectedDate),
-        getSales(),
-        getExpenses({ startDate: selectedDate, endDate: selectedDate }),
-      ]);
-
-      setDailyReport(dailyRes.data);
-      setStockValue(stockRes.data);
-
-      // Combine and format all transactions as journal entries
-      const entries = [];
-      let runningBalance = 0;
-
-      // Add sales (Debit: Cash, Credit: Sales Revenue)
-      salesRes.data.forEach(sale => {
-        if (sale.createdAt.startsWith(selectedDate)) {
-          const amount = parseFloat(sale.totalAmount);
-          runningBalance += amount;
-          entries.push({
-            date: sale.createdAt,
-            description: `Vente - ${sale.paymentMethod} `,
-            reference: `INV - ${sale.id} `,
-            debit: amount,
-            credit: 0,
-            balance: runningBalance,
-            type: 'SALE',
-          });
-        }
-      });
-
-      // Add expenses (Debit: Expense, Credit: Cash)
-      expensesRes.data.forEach(expense => {
-        const amount = parseFloat(expense.amount);
-        runningBalance -= amount;
-        entries.push({
-          date: expense.createdAt,
-          description: expense.description,
-          reference: `EXP - ${expense.id} `,
-          debit: 0,
-          credit: amount,
-          balance: runningBalance,
-          type: 'EXPENSE',
-        });
-      });
-
-      // Sort by date
-      entries.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-      // Recalculate running balance after sorting
-      let balance = 0;
-      entries.forEach(entry => {
-        balance += entry.debit - entry.credit;
-        entry.balance = balance;
-      });
-
-      setJournalEntries(entries);
+      const res = await getDailyReport(selectedDate);
+      setDailyReport(res.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Échec du chargement des rapports');
-      toast.error('Échec du chargement des rapports');
+      console.error(err);
+      setError('Échec du chargement du résumé');
+      toast.error('Échec du chargement du résumé');
     } finally {
       setLoading(false);
     }
   }, [selectedDate, toast]);
 
+  const fetchJournal = useCallback(async (page = 1, search = '') => {
+    try {
+      setJournalLoading(true);
+      const res = await getJournalReport({ date: selectedDate, page, limit: 10, search });
+      setJournalData(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Échec du chargement du journal');
+    } finally {
+      setJournalLoading(false);
+    }
+  }, [selectedDate, toast]);
+
+  const fetchStock = useCallback(async (page = 1, search = '') => {
+    try {
+      setStockLoading(true);
+      const res = await getStockValuation({ date: selectedDate, page, limit: 10, search });
+      setStockData(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Échec du chargement du stock');
+    } finally {
+      setStockLoading(false);
+    }
+  }, [selectedDate, toast]);
+
+  // Initial fetch and summary update on date change
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
+    fetchSummary();
+    setJournalPage(1);
+    setStockPage(1);
+  }, [fetchSummary]);
+
+  // Debounced search for Journal
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchJournal(journalPage, journalSearch);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [fetchJournal, journalPage, journalSearch]);
+
+  // Debounced search for Stock
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchStock(stockPage, stockSearch);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [fetchStock, stockPage, stockSearch]);
 
   const handlePrint = () => {
     window.print();
@@ -97,10 +96,6 @@ export default function Reports() {
 
   if (loading) return <LoadingSpinner />;
 
-  const totalDebit = journalEntries.reduce((sum, entry) => sum + entry.debit, 0);
-  const totalCredit = journalEntries.reduce((sum, entry) => sum + entry.credit, 0);
-
-  console.log(stockValue)
   return (
     <div>
       <div className="flex items-center justify-between mb-6 no-print">
@@ -133,32 +128,28 @@ export default function Reports() {
           title="Ventes du Jour"
           value={formatCurrency(dailyReport?.totalDailySales || dailyReport?.totalRevenue || 0)}
           icon={DollarSign}
-          className="card-glass hover-lift"
         />
         <StatCard
           title="Bénéfice Total"
           value={formatCurrency(dailyReport?.totalProfit || 0)}
           icon={TrendingUp}
-          className="card-glass hover-lift"
         />
         <StatCard
           title="Transactions"
           value={dailyReport?.transactionCount || 0}
           icon={FileText}
-          className="card-glass hover-lift"
         />
         <StatCard
           title="Valeur du Stock"
-          value={formatCurrency(stockValue?.totalValuation || 0)}
+          value={formatCurrency(stockData?.totalValue || 0)}
           icon={Package}
-          className="card-glass hover-lift"
         />
       </div>
 
       {/* Accounting Journal */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
         <div className="p-6 border-b bg-gray-50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Journal Général</h2>
               <p className="text-sm text-gray-600 mt-1">Date : {new Date(selectedDate).toLocaleDateString('fr-FR', {
@@ -168,129 +159,185 @@ export default function Reports() {
                 day: 'numeric'
               })}</p>
             </div>
-            <FileText className="h-8 w-8 text-gray-400" />
+            <div className="relative">
+              <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher une transaction..."
+                value={journalSearch}
+                onChange={(e) => { setJournalSearch(e.target.value); setJournalPage(1); }}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative min-h-[200px]">
+          {journalLoading && (
+            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+              <LoadingSpinner />
+            </div>
+          )}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Date & Heure
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Débit (FBu)
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Crédit (FBu)
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Solde (FBu)
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Heure</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Débit (FBu)</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Crédit (FBu)</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Solde (FBu)</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {journalEntries.length === 0 ? (
+              {journalData.entries.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>Aucune transaction enregistrée pour cette date</p>
+                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                    <p>Aucune transaction trouvée</p>
                   </td>
                 </tr>
               ) : (
                 <>
-                  {journalEntries.map((entry, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  {journalData.entries.map((entry, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDateTime(entry.date)}
+                        {new Date(entry.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {entry.description}
+                        <div className="font-medium">{entry.description}</div>
+                        <div className="text-xs text-gray-500">{entry.reference}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                        {entry.debit > 0 ? (
-                          <span className="text-green-600">{formatCurrency(entry.debit)}</span>
-                        ) : (
-                          <span className="text-gray-300">—</span>
-                        )}
+                        {entry.debit > 0 ? <span className="text-green-600">{formatCurrency(entry.debit)}</span> : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                        {entry.credit > 0 ? (
-                          <span className="text-red-600">{formatCurrency(entry.credit)}</span>
-                        ) : (
-                          <span className="text-gray-300">—</span>
-                        )}
+                        {entry.credit > 0 ? <span className="text-red-600">{formatCurrency(entry.credit)}</span> : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
                         {formatCurrency(entry.balance)}
                       </td>
                     </tr>
                   ))}
-                  {/* Totals Row */}
-                  <tr className="bg-gray-100 font-bold">
-                    <td colSpan="2" className="px-6 py-4 text-sm text-gray-900 uppercase">
-                      Total
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-700">
-                      {formatCurrency(totalDebit)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-700">
-                      {formatCurrency(totalCredit)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
-                      {formatCurrency(totalDebit - totalCredit)}
-                    </td>
+                  <tr className="bg-gray-50 font-bold border-t-2 border-gray-200">
+                    <td colSpan="2" className="px-6 py-4 text-sm text-gray-900">Totaux du jour</td>
+                    <td className="px-6 py-4 text-right text-green-700">{formatCurrency(journalData.totalDebit)}</td>
+                    <td className="px-6 py-4 text-right text-red-700">{formatCurrency(journalData.totalCredit)}</td>
+                    <td className="px-6 py-4 text-right text-gray-900">{formatCurrency(journalData.totalDebit - journalData.totalCredit)}</td>
                   </tr>
                 </>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Journal Pagination */}
+        {journalData.totalPages > 1 && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between no-print">
+            <div className="text-sm text-gray-600">
+              Affichage de {journalData.entries.length} sur {journalData.totalCount} transactions
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={journalPage === 1}
+                onClick={() => setJournalPage(p => p - 1)}
+                className="p-2 border rounded hover:bg-white disabled:opacity-50"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="px-4 py-2 text-sm font-medium">Page {journalPage} sur {journalData.totalPages}</span>
+              <button
+                disabled={journalPage === journalData.totalPages}
+                onClick={() => setJournalPage(p => p + 1)}
+                className="p-2 border rounded hover:bg-white disabled:opacity-50"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Stock Valuation */}
-      {stockValue && stockValue.items && stockValue.items.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b bg-gray-50">
-            <h2 className="text-xl font-bold text-gray-900">Valorisation du Stock</h2>
-            <p className="text-sm text-gray-600 mt-1">Valeur actuelle de l'inventaire</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Produit</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Quantité</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Coût Unitaire</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Valeur Totale</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {stockValue.items.map((item) => (
-                  <tr key={item.productId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">{item.productName}</td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-900">{item.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-900">{formatCurrency(item.unitCost)}</td>
-                    <td className="px-6 py-4 text-sm text-right font-medium text-gray-900">
-                      {formatCurrency(item.totalValue)}
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-100 font-bold">
-                  <td colSpan="3" className="px-6 py-4 text-sm text-gray-900 uppercase">Valeur Totale du Stock</td>
-                  <td className="px-6 py-4 text-sm text-right text-gray-900">
-                    {formatCurrency(stockValue.totalValue)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="p-6 border-b bg-gray-50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Valorisation du Stock (Achat)</h2>
+              <p className="text-sm text-gray-600 mt-1">Valeur totale : {formatCurrency(stockData.totalValue)}</p>
+            </div>
+            <div className="relative">
+              <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher un produit..."
+                value={stockSearch}
+                onChange={(e) => { setStockSearch(e.target.value); setStockPage(1); }}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
+              />
+            </div>
           </div>
         </div>
-      )}
+        <div className="overflow-x-auto relative min-h-[200px]">
+          {stockLoading && (
+            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+              <LoadingSpinner />
+            </div>
+          )}
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Produit</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase">Quantité</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">PMP Achat</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Valeur Totale</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {stockData.items.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
+                    <p>Aucun produit trouvé</p>
+                  </td>
+                </tr>
+              ) : (
+                stockData.items.map((item) => (
+                  <tr key={item.productId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">{item.productName}</td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-900">{item.quantity}</td>
+                    <td className="px-6 py-4 text-sm text-right text-gray-900 font-medium">{formatCurrency(item.unitCost)}</td>
+                    <td className="px-6 py-4 text-sm text-right font-bold text-indigo-600">{formatCurrency(item.totalValue)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Stock Pagination */}
+        {stockData.totalPages > 1 && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between no-print">
+            <div className="text-sm text-gray-600">
+              Affichage de {stockData.items.length} sur {stockData.totalCount} produits
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={stockPage === 1}
+                onClick={() => setStockPage(p => p - 1)}
+                className="p-2 border rounded hover:bg-white disabled:opacity-50"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="px-4 py-2 text-sm font-medium">Page {stockPage} sur {stockData.totalPages}</span>
+              <button
+                disabled={stockPage === stockData.totalPages}
+                onClick={() => setStockPage(p => p + 1)}
+                className="p-2 border rounded hover:bg-white disabled:opacity-50"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

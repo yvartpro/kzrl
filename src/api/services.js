@@ -35,5 +35,6 @@ export const getExpenses = (params) => api.get('/cash/expenses', { params });
 
 // Reports
 export const getDailyReport = (date) => api.get('/reports/daily', { params: { date } });
-export const getStockValuation = (date) => api.get('/reports/stock-value', { params: { date } });
+export const getJournalReport = (params) => api.get('/reports/journal', { params });
+export const getStockValuation = (params) => api.get('/reports/stock-value', { params });
 export const getStockHealth = () => api.get('/reports/stock-health');
