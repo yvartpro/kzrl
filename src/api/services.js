@@ -46,3 +46,7 @@ export const createUser = (data) => api.post('/users', data);
 export const toggleUserStatus = (id) => api.patch(`/users/${id}/toggle`);
 export const getRoles = () => api.get('/roles');
 export const changePassword = (data) => api.post('/auth/change-password', data);
+
+// System Initialization
+export const initializeCash = (data) => api.post('/system/initialize-cash', data);
+export const initializeStock = (data) => api.post('/system/initialize-stock', data);
