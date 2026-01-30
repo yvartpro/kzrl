@@ -10,4 +10,8 @@ export default defineConfig({
       '/api': 'http://localhost:3000',
     },
   },
+  base: "/kzrl",
+  build: {
+    outDir: "../api/public/"
+  }
 })

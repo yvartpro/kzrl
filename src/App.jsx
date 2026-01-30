@@ -17,7 +17,7 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename='/kzrl'>
           <Routes>
             <Route path="/login" element={<Login />} />
 
