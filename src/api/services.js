@@ -3,6 +3,8 @@ import api from './client';
 // Products
 export const getProducts = () => api.get('/products');
 export const createProduct = (data) => api.post('/products', data);
+export const updateProduct = (id, data) => api.patch(`/products/${id}`, data);
+export const deleteProduct = (id) => api.delete(`/products/${id}`);
 
 // Categories
 export const getCategories = () => api.get('/categories');
@@ -19,6 +21,7 @@ export const createPurchase = (data) => api.post('/purchases', data);
 // Sales
 export const getSales = () => api.get('/sales');
 export const createSale = (data) => api.post('/sales', data);
+export const createBulkSales = (data) => api.post('/sales/bulk', data);
 
 // Stock
 export const adjustStock = (data) => api.post('/stock/adjust', data);
@@ -33,3 +36,4 @@ export const getExpenses = (params) => api.get('/cash/expenses', { params });
 // Reports
 export const getDailyReport = (date) => api.get('/reports/daily', { params: { date } });
 export const getStockValuation = () => api.get('/reports/stock-value');
+export const getStockHealth = () => api.get('/reports/stock-health');
