@@ -32,18 +32,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 glass p-8 rounded-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 gradient-primary"></div>
-
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 p-8 border border-gray-100 rounded-2xl bg-white shadow-sm">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md mb-4 animate-scale-in">
-            <LogIn className="h-8 w-8 text-white" />
+          <div className="mx-auto h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+            <LogIn className="h-8 w-8 text-gray-700" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white font-display">
+          <h2 className="text-3xl font-extrabold text-gray-900 font-display">
             KZRL Dashboard
           </h2>
-          <p className="mt-2 text-sm text-white/80">
+          <p className="mt-2 text-sm text-gray-500">
             Connectez-vous pour accéder à votre espace
           </p>
         </div>
@@ -52,14 +50,14 @@ const Login = () => {
           <div className="space-y-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-white/60" />
+                <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 id="username"
                 name="username"
                 type="text"
                 required
-                className="block w-full pl-10 pr-3 py-3 border border-white/20 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm transition-all text-sm"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
                 placeholder="Nom d'utilisateur"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -67,14 +65,14 @@ const Login = () => {
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/60" />
+                <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="block w-full pl-10 pr-3 py-3 border border-white/20 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm transition-all text-sm"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
                 placeholder="Mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -86,7 +84,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white backdrop-blur-md transition-all font-semibold disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all font-semibold disabled:opacity-50"
             >
               {loading ? (
                 <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
