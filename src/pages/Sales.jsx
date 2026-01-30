@@ -4,7 +4,7 @@ import { getProducts, createSale } from '../api/services';
 import { formatCurrency } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { CardSkeleton } from '../components/Skeletons';
 import BulkSalesTable from '../components/BulkSalesTable';
 
 export default function Sales() {
@@ -107,7 +107,6 @@ export default function Sales() {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -145,7 +144,7 @@ export default function Sales() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <input
                 type="text"
                 placeholder="Rechercher des produits..."
@@ -155,29 +154,33 @@ export default function Sales() {
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
-                {filteredProducts.map(product => (
-                  <button
-                    key={product.id}
-                    onClick={() => addToCart(product)}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-                  >
-                    <h3 className="font-medium text-gray-900">{product.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {formatCurrency(product.sellingPrice)} / unité
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Stock: {product.Stock?.quantity || 0} unités
-                    </p>
-                  </button>
-                ))}
+                {loading ? (
+                  <CardSkeleton count={6} />
+                ) : (
+                  filteredProducts.map(product => (
+                    <button
+                      key={product.id}
+                      onClick={() => addToCart(product)}
+                      className="p-4 border border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left shadow-sm hover:shadow-md"
+                    >
+                      <h3 className="font-bold text-gray-900 text-base">{product.name}</h3>
+                      <p className="text-sm text-gray-700 mt-1 font-medium">
+                        {formatCurrency(product.sellingPrice)} / unité
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Stock: {product.Stock?.quantity || 0} unités
+                      </p>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </div>
 
           {/* Cart */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-lg shadow-blue-50/50 sticky top-24">
+              <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2 tracking-tight">
                 <ShoppingCart className="h-5 w-5" />
                 Panier ({cart.length})
               </h2>
@@ -218,9 +221,9 @@ export default function Sales() {
                     ))}
                   </div>
 
-                  <div className="border-t pt-4 mb-4">
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
+                  <div className="border-t border-gray-100 pt-6 mb-6">
+                    <div className="flex justify-between text-2xl font-black text-gray-900 tracking-tighter">
+                      <span className="text-gray-500 text-sm uppercase tracking-widest mt-2">Total</span>
                       <span>{formatCurrency(total)}</span>
                     </div>
                   </div>

@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatCard from '../components/StatCard';
+import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
 
 export default function CashExpenses() {
   const [cashBalance, setCashBalance] = useState(0);
@@ -73,7 +74,6 @@ export default function CashExpenses() {
 
   const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -95,24 +95,30 @@ export default function CashExpenses() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <StatCard
-          title="Solde Caisse"
-          value={formatCurrency(cashBalance)}
-          icon={Wallet}
-          className="card-glass hover-lift"
-        />
-        <StatCard
-          title="Dépenses du Jour"
-          value={formatCurrency(totalExpenses)}
-          icon={TrendingDown}
-          className="card-glass hover-lift"
-        />
-        <StatCard
-          title="Transactions"
-          value={movements.length}
-          icon={DollarSign}
-          className="card-glass hover-lift"
-        />
+        {loading ? (
+          <CardSkeleton count={3} />
+        ) : (
+          <>
+            <StatCard
+              title="Solde Caisse"
+              value={formatCurrency(cashBalance)}
+              icon={Wallet}
+              className="card-glass hover-lift"
+            />
+            <StatCard
+              title="Dépenses du Jour"
+              value={formatCurrency(totalExpenses)}
+              icon={TrendingDown}
+              className="card-glass hover-lift"
+            />
+            <StatCard
+              title="Transactions"
+              value={movements.length}
+              icon={DollarSign}
+              className="card-glass hover-lift"
+            />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-start">
@@ -220,91 +226,105 @@ export default function CashExpenses() {
 
       {/* Expenses Table */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Dépenses</h2>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {expenses.length === 0 ? (
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <TrendingDown className="h-5 w-5 text-red-600" />
+          Dépenses
+        </h2>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {loading ? (
+            <TableSkeleton rows={5} cols={3} />
+          ) : (
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <td colSpan="3" className="px-6 py-12 text-center text-gray-500">
-                    <TrendingDown className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>Aucune dépense enregistrée</p>
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
                 </tr>
-              ) : (
-                expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDateTime(expense.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {expense.description}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                      {formatCurrency(expense.amount)}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {expenses.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="px-6 py-12 text-center text-gray-500">
+                      <TrendingDown className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                      <p>Aucune dépense enregistrée</p>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  expenses.map((expense) => (
+                    <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDateTime(expense.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {expense.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
+                        {formatCurrency(expense.amount)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
       {/* Cash Movements */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mouvements de Caisse</h2>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {movements.length === 0 ? (
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <Wallet className="h-5 w-5 text-blue-600" />
+          Mouvements de Caisse
+        </h2>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {loading ? (
+            <TableSkeleton rows={5} cols={4} />
+          ) : (
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                    <Wallet className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>Aucun mouvement de caisse</p>
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
                 </tr>
-              ) : (
-                movements.map((movement) => (
-                  <tr key={movement.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDateTime(movement.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${movement.type === 'IN'
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-red-50 text-red-600'
-                        }`}>
-                        {movement.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {movement.reason}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${movement.type === 'IN' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                      {movement.type === 'IN' ? '+' : '-'}{formatCurrency(movement.amount)}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {movements.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
+                      <Wallet className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                      <p>Aucun mouvement de caisse</p>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  movements.map((movement) => (
+                    <tr key={movement.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDateTime(movement.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${movement.type === 'IN'
+                          ? 'bg-green-50 text-green-600'
+                          : 'bg-red-50 text-red-600'
+                          }`}>
+                          {movement.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {movement.reason}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${movement.type === 'IN' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                        {movement.type === 'IN' ? '+' : '-'}{formatCurrency(movement.amount)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

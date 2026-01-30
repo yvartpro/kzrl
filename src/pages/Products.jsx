@@ -4,7 +4,7 @@ import { getProducts, getCategories, createProduct, updateProduct, adjustStock }
 import { formatCurrency, getStockStatus, getStockStatusColor } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { TableSkeleton } from '../components/Skeletons';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 
 export default function Products() {
@@ -133,7 +133,6 @@ export default function Products() {
     return matchesSearch && matchesCategory;
   });
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -317,102 +316,92 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produit
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Catégorie
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Unités/Carton
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prix d'Achat
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prix de Vente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+        {loading ? (
+          <TableSkeleton rows={8} cols={6} />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
-                    <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                    <p>Aucun produit trouvé</p>
-                  </td>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Produit</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Catégorie</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Stock</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">U/Carton</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Achat</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Vente</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Statut</th>
+                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Actions</th>
                 </tr>
-              ) : (
-                filteredProducts.map((product) => {
-                  const stockQty = product.Stock?.quantity || 0;
-                  const status = getStockStatus(stockQty);
-                  return (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{product.name}</div>
-                        {product.description && (
-                          <div className="text-sm text-gray-500">{product.description}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {product.Category?.name || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {stockQty} unités
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {product.unitsPerBox}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(product.purchasePrice)} / carton
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(product.sellingPrice)} / unité
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStockStatusColor(status)}`}>
-                          {status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => openEditModal(product)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Modifier"
-                          >
-                            <Edit3 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => openAdjustModal(product)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs text-amber-600 hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors"
-                          >
-                            <Plus className="h-3 w-3" />
-                            Ajuster Stock
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                      <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                      <p>Aucun produit trouvé</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProducts.map((product) => {
+                    const stockQty = product.Stock?.quantity || 0;
+                    const status = getStockStatus(stockQty);
+                    return (
+                      <tr key={product.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-bold text-gray-900 text-sm">{product.name}</div>
+                          {product.description && (
+                            <div className="text-xs text-gray-500 font-medium">{product.description}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {product.Category?.name || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`text-sm font-black ${stockQty <= (product.Stock?.minLevel || 0) ? 'text-red-600' : 'text-gray-900'}`}>
+                            {stockQty} <span className="text-[10px] uppercase font-bold text-gray-400">unités</span>
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {product.unitsPerBox}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(product.purchasePrice)} / carton
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(product.sellingPrice)} / unité
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStockStatusColor(status)}`}>
+                            {status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openEditModal(product)}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Modifier"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => openAdjustModal(product)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs text-amber-600 hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors"
+                            >
+                              <Plus className="h-3 w-3" />
+                              Ajuster Stock
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Stock Adjustment Modal */}

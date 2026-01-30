@@ -4,6 +4,7 @@ import { getUsers, createUser, toggleUserStatus, getRoles, updateUser, payStaff 
 import { useToast } from '../components/Toast';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
+import { TableSkeleton } from '../components/Skeletons';
 
 export default function Users() {
   const { user: currentUser } = useAuth();
@@ -96,7 +97,6 @@ export default function Users() {
     user.Role?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -127,84 +127,88 @@ export default function Users() {
             />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Personnel</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Rôle</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Salaire</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                          {user.username.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900">{user.username}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.Role?.name === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-                        user.Role?.name === 'MANAGER' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                        <Shield className="h-3 w-3" />
-                        {user.Role?.name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-gray-900">{parseFloat(user.salary).toLocaleString()} FBu</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                        {user.isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
-                        {user.isActive ? 'Actif' : 'Désactivé'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right flex justify-end gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingUser(user);
-                          setFormData({ username: user.username, roleId: user.RoleId, salary: user.salary });
-                          setShowModal(true);
-                        }}
-                        className="p-1 hover:bg-indigo-50 text-indigo-600 rounded transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setPaymentUser(user);
-                          setPaymentAmount(user.salary);
-                        }}
-                        className="p-1 hover:bg-green-50 text-green-600 rounded transition-colors"
-                        title="Payer"
-                      >
-                        <DollarSign className="h-4 w-4" />
-                      </button>
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleToggleStatus(user.id)}
-                          className={`text-sm font-semibold transition-colors ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
-                            }`}
-                        >
-                          {user.isActive ? 'Suspendre' : 'Activer'}
-                        </button>
-                      )}
-                    </td>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {loading ? (
+              <TableSkeleton rows={6} cols={5} />
+            ) : (
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gray-50/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Personnel</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Rôle</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Salaire</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredUsers.length === 0 && (
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                            {user.username.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">{user.username}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.Role?.name === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                          user.Role?.name === 'MANAGER' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                          <Shield className="h-3 w-3" />
+                          {user.Role?.name}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-bold text-gray-900">{parseFloat(user.salary).toLocaleString()} FBu</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                          {user.isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                          {user.isActive ? 'Actif' : 'Désactivé'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right flex justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingUser(user);
+                            setFormData({ username: user.username, roleId: user.RoleId, salary: user.salary });
+                            setShowModal(true);
+                          }}
+                          className="p-1 hover:bg-indigo-50 text-indigo-600 rounded transition-colors"
+                          title="Modifier"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPaymentUser(user);
+                            setPaymentAmount(user.salary);
+                          }}
+                          className="p-1 hover:bg-green-50 text-green-600 rounded transition-colors"
+                          title="Payer"
+                        >
+                          <DollarSign className="h-4 w-4" />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleToggleStatus(user.id)}
+                            className={`text-sm font-semibold transition-colors ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
+                              }`}
+                          >
+                            {user.isActive ? 'Suspendre' : 'Activer'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {!loading && filteredUsers.length === 0 && (
               <div className="text-center py-12">
                 <UsersIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">Aucun utilisateur trouvé</p>
@@ -214,7 +218,7 @@ export default function Users() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4 hover-lift">
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-indigo-600" />
               Résumé des Permissions

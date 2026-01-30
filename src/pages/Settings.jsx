@@ -4,6 +4,7 @@ import { getCategories, createCategory, getSuppliers, createSupplier, changePass
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
+import { TableSkeleton, FormSkeleton } from '../components/Skeletons';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -172,7 +173,6 @@ export default function Settings() {
     });
   };
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="pb-10">
@@ -229,8 +229,11 @@ export default function Settings() {
         activeTab === 'categories' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Create Category Form */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajouter une Catégorie</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Plus className="h-5 w-5 text-blue-600" />
+                Ajouter une Catégorie
+              </h2>
               <form onSubmit={handleCreateCategory}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -241,14 +244,14 @@ export default function Settings() {
                     value={categoryName}
                     onChange={(e) => setCategoryName(e.target.value)}
                     placeholder="ex: Bières, Jus, Snacks"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={categorySubmitting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-md shadow-blue-50"
                 >
                   <Plus className="h-5 w-5" />
                   {categorySubmitting ? 'Création...' : 'Créer Catégorie'}
@@ -257,12 +260,14 @@ export default function Settings() {
             </div>
 
             {/* Categories List */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Catégories Existantes ({categories.length})
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Catégories Existantes ({loading ? '...' : categories.length})
               </h2>
               <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                {categories.length === 0 ? (
+                {loading ? (
+                  <TableSkeleton rows={5} cols={1} />
+                ) : categories.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Aucune catégorie</p>
                 ) : (
                   categories.map((category) => (
@@ -288,8 +293,11 @@ export default function Settings() {
         activeTab === 'suppliers' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Create Supplier Form */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajouter un Fournisseur</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                Ajouter un Fournisseur
+              </h2>
               <form onSubmit={handleCreateSupplier}>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -300,7 +308,7 @@ export default function Settings() {
                     value={supplierForm.name}
                     onChange={(e) => setSupplierForm({ ...supplierForm, name: e.target.value })}
                     placeholder="ex: ABC Distributeurs"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
@@ -313,13 +321,13 @@ export default function Settings() {
                     value={supplierForm.contact}
                     onChange={(e) => setSupplierForm({ ...supplierForm, contact: e.target.value })}
                     placeholder="ex: +257 79 123 456"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={supplierSubmitting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-md shadow-blue-50"
                 >
                   <Plus className="h-5 w-5" />
                   {supplierSubmitting ? 'Création...' : 'Créer Fournisseur'}
@@ -328,12 +336,14 @@ export default function Settings() {
             </div>
 
             {/* Suppliers List */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Fournisseurs Existants ({suppliers.length})
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Fournisseurs Existants ({loading ? '...' : suppliers.length})
               </h2>
               <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                {suppliers.length === 0 ? (
+                {loading ? (
+                  <TableSkeleton rows={5} cols={1} />
+                ) : suppliers.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Aucun fournisseur</p>
                 ) : (
                   suppliers.map((supplier) => (
@@ -421,7 +431,7 @@ export default function Settings() {
         activeTab === 'init' && isAdmin && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Cash Initialization */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Database className="h-5 w-5 text-green-600" />
                 Ouverture de Caisse
@@ -430,9 +440,13 @@ export default function Settings() {
                 Définissez le montant initial présent dans la caisse lors de l'ouverture du bar.
               </p>
 
-              <div className="bg-green-50 p-4 rounded-lg mb-6 flex justify-between items-center border border-green-100">
-                <span className="text-sm text-green-700 font-medium">Solde Actuel :</span>
-                <span className="text-xl font-bold text-green-800">{formatCurrency(cashBalance)}</span>
+              <div className="bg-green-50 p-4 rounded-xl mb-6 flex justify-between items-center border border-green-100 shadow-sm">
+                <span className="text-sm text-green-700 font-bold">Solde Actuel :</span>
+                {loading ? (
+                  <Skeleton variant="text" className="w-24 h-6" />
+                ) : (
+                  <span className="text-xl font-black text-green-800">{formatCurrency(cashBalance)}</span>
+                )}
               </div>
 
               <form onSubmit={handleInitializeCash} className="space-y-4">
@@ -453,7 +467,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={initializationLoading}
-                  className="w-full py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-400 transition-all shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-400 transition-all shadow-md shadow-green-50 flex items-center justify-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   {initializationLoading ? 'Initialisation...' : 'Valider le Solde'}
@@ -462,59 +476,65 @@ export default function Settings() {
             </div>
 
             {/* Stock Initialization */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm h-full flex flex-col">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-full flex flex-col">
               <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Tag className="h-5 w-5 text-blue-600" />
                 Inventaire Initial
               </h2>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 mb-6 font-medium">
                 Saisissez les quantités de produits déjà disponibles en stock.
               </p>
 
-              <div className="flex-grow overflow-auto max-h-[500px] border border-gray-100 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Produit</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Quantité</th>
-                      <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {products.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {product.name}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-center">
-                          <input
-                            type="number"
-                            className="w-24 px-2 py-1 border border-gray-300 rounded text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={stockInitValues[product.id] || 0}
-                            onChange={(e) => setStockInitValues({ ...stockInitValues, [product.id]: e.target.value })}
-                          />
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-right">
-                          <button
-                            onClick={() => handleInitializeStock(product.id)}
-                            disabled={initializationLoading}
-                            className="text-blue-600 hover:text-blue-900 font-medium text-sm p-1 transition-colors"
-                            title="Mettre à jour ce stock"
-                          >
-                            <Save className="h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {products.length === 0 && (
+              <div className="flex-grow overflow-auto max-h-[500px] border border-gray-50 rounded-xl shadow-inner bg-gray-50/30">
+                {loading ? (
+                  <div className="p-4 space-y-4">
+                    <TableSkeleton rows={8} cols={2} />
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50/80 sticky top-0 backdrop-blur-sm">
                       <tr>
-                        <td colSpan="3" className="px-4 py-8 text-center text-gray-500">
-                          Créez d'abord des produits
-                        </td>
+                        <th className="px-4 py-3 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Produit</th>
+                        <th className="px-4 py-3 text-center text-xs font-black text-gray-500 uppercase tracking-widest">Quantité</th>
+                        <th className="px-4 py-3 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Action</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-50">
+                      {products.map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {product.name}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-center">
+                            <input
+                              type="number"
+                              className="w-24 px-2 py-1 border border-gray-300 rounded text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              value={stockInitValues[product.id] || 0}
+                              onChange={(e) => setStockInitValues({ ...stockInitValues, [product.id]: e.target.value })}
+                            />
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleInitializeStock(product.id)}
+                              disabled={initializationLoading}
+                              className="text-blue-600 hover:text-blue-900 font-medium text-sm p-1 transition-colors"
+                              title="Mettre à jour ce stock"
+                            >
+                              <Save className="h-5 w-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {products.length === 0 && (
+                        <tr>
+                          <td colSpan="3" className="px-4 py-8 text-center text-gray-500">
+                            Créez d'abord des produits
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </div>
               <p className="text-xs text-gray-500 mt-4 italic">
                 * Note: Cela créera un mouvement de type 'INITIAL' pour régulariser le stock.

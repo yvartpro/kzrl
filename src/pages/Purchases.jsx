@@ -4,7 +4,7 @@ import { getPurchases, getSuppliers, getProducts, createPurchase } from '../api/
 import { formatCurrency, formatDateTime } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { TableSkeleton } from '../components/Skeletons';
 
 export default function Purchases() {
   const [purchases, setPurchases] = useState([]);
@@ -87,7 +87,6 @@ export default function Purchases() {
     }
   };
 
-  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -216,50 +215,54 @@ export default function Purchases() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fournisseur</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coût Total</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {purchases.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+        {loading ? (
+          <TableSkeleton rows={5} cols={5} />
+        ) : (
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50/50">
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                  <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                  <p>Aucun achat enregistré</p>
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fournisseur</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coût Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
               </tr>
-            ) : (
-              purchases.map((purchase) => (
-                <tr key={purchase.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDateTime(purchase.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {purchase.Supplier?.name || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(purchase.totalCost)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-50 text-green-600">
-                      {purchase.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {purchase.notes || '-'}
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {purchases.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                    <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <p>Aucun achat enregistré</p>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                purchases.map((purchase) => (
+                  <tr key={purchase.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDateTime(purchase.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {purchase.Supplier?.name || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {formatCurrency(purchase.totalCost)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-50 text-green-600">
+                        {purchase.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {purchase.notes || '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
