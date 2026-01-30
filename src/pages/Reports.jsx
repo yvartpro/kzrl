@@ -10,6 +10,7 @@ import StatCard from '../components/StatCard';
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyReport, setDailyReport] = useState(null);
+  const [dailySales, setDailySales] = useState(null)
   const [stockValue, setStockValue] = useState(null);
   const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function Reports() {
 
       setDailyReport(dailyRes.data);
       setStockValue(stockRes.data);
+      setDailySales(salesRes.data)
 
       // Combine and format all transactions as journal entries
       const entries = [];
@@ -100,6 +102,7 @@ export default function Reports() {
   const totalDebit = journalEntries.reduce((sum, entry) => sum + entry.debit, 0);
   const totalCredit = journalEntries.reduce((sum, entry) => sum + entry.credit, 0);
 
+  console.log(dailyReport)
   return (
     <div>
       <div className="flex items-center justify-between mb-6 no-print">
@@ -129,8 +132,8 @@ export default function Reports() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
         <StatCard
-          title="Ventes Totales"
-          value={formatCurrency(dailyReport?.totalSales || 0)}
+          title="Ventes du Jour"
+          value={formatCurrency(dailyReport?.totalDailySales || dailyReport?.totalRevenue || 0)}
           icon={DollarSign}
           className="card-glass hover-lift"
         />
@@ -142,7 +145,7 @@ export default function Reports() {
         />
         <StatCard
           title="Transactions"
-          value={dailyReport?.salesCount || 0}
+          value={dailyReport?.transactionCount || 0}
           icon={FileText}
           className="card-glass hover-lift"
         />
