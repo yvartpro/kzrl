@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Package, Plus, Search, X, Edit3 } from 'lucide-react';
-import { getProducts, getCategories, createProduct, adjustStock } from '../api/services';
+import { getProducts, getCategories, createProduct, updateProduct, adjustStock } from '../api/services';
 import { formatCurrency, getStockStatus, getStockStatusColor } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
@@ -18,6 +18,7 @@ export default function Products() {
   const [submitting, setSubmitting] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   const toast = useToast();
 
@@ -58,13 +59,24 @@ export default function Products() {
     try {
       setSubmitting(true);
       setError(null);
-      await createProduct({
+
+      const payload = {
         ...formData,
         unitsPerBox: parseInt(formData.unitsPerBox),
         purchasePrice: parseFloat(formData.purchasePrice),
         sellingPrice: parseFloat(formData.sellingPrice),
-      });
+      };
+
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, payload);
+        toast.success('Produit mis à jour avec succès');
+      } else {
+        await createProduct(payload);
+        toast.success('Produit créé avec succès');
+      }
+
       setShowModal(false);
+      setEditingProduct(null);
       setFormData({
         name: '',
         description: '',
@@ -76,10 +88,9 @@ export default function Products() {
         sellingPrice: 0,
       });
       fetchData();
-      toast.success('Product created successfully');
     } catch (err) {
-      setError(err.response?.data?.error || 'Échec de la création du produit');
-      toast.error('Échec de la création du produit');
+      setError(err.response?.data?.error || 'Échec de l\'opération');
+      toast.error('Échec de l\'opération');
     } finally {
       setSubmitting(false);
     }
@@ -99,6 +110,21 @@ export default function Products() {
   const openAdjustModal = (product) => {
     setSelectedProduct(product);
     setShowAdjustModal(true);
+  };
+
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description || '',
+      CategoryId: product.CategoryId,
+      purchaseUnit: product.purchaseUnit,
+      baseUnit: product.baseUnit,
+      unitsPerBox: product.unitsPerBox,
+      purchasePrice: product.purchasePrice,
+      sellingPrice: product.sellingPrice,
+    });
+    setShowModal(true);
   };
 
   const filteredProducts = products.filter(product => {
@@ -132,9 +158,11 @@ export default function Products() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">Ajouter un Nouveau Produit</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {editingProduct ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit'}
+              </h2>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => { setShowModal(false); setEditingProduct(null); }}
                 className="p-2 hover:bg-gray-100 rounded-lg"
               >
                 <X className="h-5 w-5" />
@@ -246,7 +274,7 @@ export default function Products() {
               <div className="flex gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); setEditingProduct(null); }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
                 >
                   Annuler
@@ -256,7 +284,7 @@ export default function Products() {
                   disabled={submitting}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
                 >
-                  {submitting ? 'Création...' : 'Créer Produit'}
+                  {submitting ? 'Traitement...' : (editingProduct ? 'Enregistrer' : 'Créer Produit')}
                 </button>
               </div>
             </form>
@@ -361,13 +389,22 @@ export default function Products() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => openAdjustModal(product)}
-                          className="flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                          Ajuster
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => openEditModal(product)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openAdjustModal(product)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs text-amber-600 hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Ajuster Stock
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
