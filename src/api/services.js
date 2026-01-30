@@ -38,6 +38,7 @@ export const getDailyReport = (date) => api.get('/reports/daily', { params: { da
 export const getJournalReport = (params) => api.get('/reports/journal', { params });
 export const getStockValuation = (params) => api.get('/reports/stock-value', { params });
 export const getStockHealth = () => api.get('/reports/stock-health');
+export const getGlobalCapital = () => api.get('/reports/global-capital');
 
 // Users & Auth
 export const getUsers = () => api.get('/users');

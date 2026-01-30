@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { DollarSign, AlertTriangle, ShoppingBag } from 'lucide-react';
+import { DollarSign, AlertTriangle, ShoppingBag, Landmark, Briefcase, Calculator } from 'lucide-react';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getSales, getProducts } from '../api/services';
-import { formatCurrency, formatDateTime, getStockStatus } from '../utils/format';
+import { getSales, getProducts, getGlobalCapital } from '../api/services';
+import { formatCurrency, getStockStatus } from '../utils/format';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [todaySales, setTodaySales] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [capitalData, setCapitalData] = useState({ liquidAssets: 0, stockValue: 0, globalCapital: 0 });
 
   useEffect(() => {
     fetchDashboardData();
@@ -22,9 +23,10 @@ export default function Dashboard() {
 
       const today = new Date().toISOString().split('T')[0];
 
-      const [salesRes, productsRes] = await Promise.all([
+      const [salesRes, productsRes, capitalRes] = await Promise.all([
         getSales(), // Note: Ideally backend should support date filtering
         getProducts(),
+        getGlobalCapital()
       ]);
 
       // Filter Sales for Today
@@ -42,6 +44,9 @@ export default function Dashboard() {
         status: getStockStatus(p.Stock?.quantity || 0)
       }));
       setLowStockProducts(lowStock);
+
+      // Set Capital Data
+      setCapitalData(capitalRes.data);
 
     } catch (err) {
       console.error(err);
@@ -61,6 +66,36 @@ export default function Dashboard() {
       </div>
 
       {error && <ErrorMessage message={error} />}
+
+      {/* Capital Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-500 uppercase">Liquidités (Caisse)</span>
+            <Landmark className="h-6 w-6 text-green-600" />
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{formatCurrency(capitalData.liquidAssets)}</div>
+          <p className="text-xs text-gray-500 mt-1">Argent disponible immédiatement</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-500 uppercase">Valeur du Stock</span>
+            <Briefcase className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{formatCurrency(capitalData.stockValue)}</div>
+          <p className="text-xs text-gray-500 mt-1">Basée sur le prix d'achat</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm bg-gradient-to-br from-indigo-50 to-white">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-indigo-700 uppercase">Capital Global</span>
+            <Calculator className="h-6 w-6 text-indigo-600" />
+          </div>
+          <div className="text-2xl font-extrabold text-indigo-900">{formatCurrency(capitalData.globalCapital)}</div>
+          <p className="text-xs text-indigo-600 mt-1 font-medium">Liquidités + Stock</p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
@@ -153,8 +188,8 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-3 text-center">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${p.status === 'OUT'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
                           }`}>
                           {p.status === 'OUT' ? 'Épuisé' : 'Faible'}
                         </span>
