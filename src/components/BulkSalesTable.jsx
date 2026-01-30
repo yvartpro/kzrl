@@ -55,16 +55,39 @@ export default function BulkSalesTable({ products, onSuccess }) {
     setLoading(true);
     try {
       const salesData = rows.map(row => ({
-        productId: parseInt(row.productId),
+        productId: row.productId,
         quantity: parseInt(row.quantity),
         paymentMethod: row.paymentMethod,
         notes: row.notes
       }));
 
-      await createBulkSales(salesData);
-      toast.success('Ventes enregistrées avec succès');
-      setRows([{ id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', notes: '' }]);
-      if (onSuccess) onSuccess();
+      const res = await createBulkSales(salesData);
+
+      if (res.status === 207) {
+        const errors = res.data.errors || [];
+        const successCount = res.data.results?.length || 0;
+
+        toast.warning(
+          <div>
+            <p className="font-bold">{successCount} réussites, {errors.length} échecs</p>
+            <ul className="text-xs mt-1 list-disc pl-4">
+              {errors.slice(0, 3).map((err, i) => (
+                <li key={i}>Ligne {parseInt(err.index) + 1}: {err.error}</li>
+              ))}
+              {errors.length > 3 && <li>...</li>}
+            </ul>
+          </div>,
+          { duration: 5000 }
+        );
+
+        // Don't clear rows if there are errors, so user can correct them
+        // Maybe filter out successful rows? For simplicity, keeping all is safer but annoying.
+        if (onSuccess && successCount > 0) onSuccess();
+      } else {
+        toast.success('Ventes enregistrées avec succès');
+        setRows([{ id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', notes: '' }]);
+        if (onSuccess) onSuccess();
+      }
     } catch (error) {
       console.error('Bulk sales error:', error);
       toast.error(error.response?.data?.error || 'Échec de l\'enregistrement des ventes');
