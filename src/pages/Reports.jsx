@@ -10,7 +10,6 @@ import StatCard from '../components/StatCard';
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyReport, setDailyReport] = useState(null);
-  const [dailySales, setDailySales] = useState(null)
   const [stockValue, setStockValue] = useState(null);
   const [journalEntries, setJournalEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,14 +24,13 @@ export default function Reports() {
 
       const [dailyRes, stockRes, salesRes, expensesRes] = await Promise.all([
         getDailyReport(selectedDate),
-        getStockValuation(),
+        getStockValuation(selectedDate),
         getSales(),
         getExpenses({ startDate: selectedDate, endDate: selectedDate }),
       ]);
 
       setDailyReport(dailyRes.data);
       setStockValue(stockRes.data);
-      setDailySales(salesRes.data)
 
       // Combine and format all transactions as journal entries
       const entries = [];
@@ -102,7 +100,7 @@ export default function Reports() {
   const totalDebit = journalEntries.reduce((sum, entry) => sum + entry.debit, 0);
   const totalCredit = journalEntries.reduce((sum, entry) => sum + entry.credit, 0);
 
-  console.log(dailyReport)
+  console.log(stockValue)
   return (
     <div>
       <div className="flex items-center justify-between mb-6 no-print">
@@ -151,7 +149,7 @@ export default function Reports() {
         />
         <StatCard
           title="Valeur du Stock"
-          value={formatCurrency(stockValue?.totalValue || 0)}
+          value={formatCurrency(stockValue?.totalValuation || 0)}
           icon={Package}
           className="card-glass hover-lift"
         />
