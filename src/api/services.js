@@ -38,3 +38,10 @@ export const getDailyReport = (date) => api.get('/reports/daily', { params: { da
 export const getJournalReport = (params) => api.get('/reports/journal', { params });
 export const getStockValuation = (params) => api.get('/reports/stock-value', { params });
 export const getStockHealth = () => api.get('/reports/stock-health');
+
+// Users & Auth
+export const getUsers = () => api.get('/users');
+export const createUser = (data) => api.post('/users', data);
+export const toggleUserStatus = (id) => api.patch(`/users/${id}/toggle`);
+export const getRoles = () => api.get('/roles');
+export const changePassword = (data) => api.post('/auth/change-password', data);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Settings as SettingsIcon, Users, Tag, Trash2 } from 'lucide-react';
-import { getCategories, createCategory, getSuppliers, createSupplier } from '../api/services';
+import { Plus, Settings as SettingsIcon, Users, Tag, Lock } from 'lucide-react';
+import { getCategories, createCategory, getSuppliers, createSupplier, changePassword } from '../api/services';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -18,6 +18,9 @@ export default function Settings() {
   // Supplier form
   const [supplierForm, setSupplierForm] = useState({ name: '', contact: '' });
   const [supplierSubmitting, setSupplierSubmitting] = useState(false);
+  // Password form
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -70,6 +73,26 @@ export default function Settings() {
     }
   };
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setError('Les nouveaux mots de passe ne correspondent pas');
+      return;
+    }
+    try {
+      setPasswordSubmitting(true);
+      setError(null);
+      await changePassword(passwordForm);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setError(null);
+      alert('Mot de passe mis à jour avec succès');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Échec de la mise à jour du mot de passe');
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -106,6 +129,16 @@ export default function Settings() {
           >
             <Users className="h-4 w-4 inline mr-2" />
             Fournisseurs
+          </button>
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'security'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Lock className="h-4 w-4 inline mr-2" />
+            Sécurité
           </button>
         </nav>
       </div>
@@ -239,37 +272,62 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Role Information */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Rôles & Permissions Utilisateurs
-        </h3>
-        <div className="space-y-3 text-sm text-blue-800">
-          <p>
-            <strong>Gestion des Rôles :</strong> Le backend dispose d'un système Utilisateur & Rôle intégré.
-            Les rôles sont stockés dans la base de données et liés aux utilisateurs.
-          </p>
-          <div className="bg-white rounded p-3 mt-2">
-            <p className="font-medium mb-2">Backend Models:</p>
-            <ul className="list-disc list-inside space-y-1 text-gray-700">
-              <li><code className="bg-gray-100 px-1 rounded">User</code> - username, passwordHash, isActive</li>
-              <li><code className="bg-gray-100 px-1 rounded">Role</code> - name (e.g., ADMIN, MANAGER, WAITER)</li>
-              <li>Relationship: <code className="bg-gray-100 px-1 rounded">User.belongsTo(Role)</code></li>
-            </ul>
+      {/* Security Tab */}
+      {activeTab === 'security' && (
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Lock className="h-5 w-5 text-indigo-600" />
+              Changer mon mot de passe
+            </h2>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mot de passe actuel
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nouveau mot de passe
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmer le nouveau mot de passe
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={passwordSubmitting}
+                className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:bg-gray-400 transition-colors"
+              >
+                {passwordSubmitting ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+              </button>
+            </form>
           </div>
-          <p className="mt-3">
-            <strong>Pour implémenter la gestion complète des rôles :</strong>
-          </p>
-          <ol className="list-decimal list-inside space-y-1 ml-2">
-            <li>Créer des endpoints de gestion des utilisateurs dans le backend</li>
-            <li>Ajouter l'authentification (JWT/sessions)</li>
-            <li>Créer une page de connexion dans le tableau de bord</li>
-            <li>Ajouter une visibilité d'interface basée sur les rôles</li>
-            <li>Ajouter une page de gestion des utilisateurs pour créer/éditer et assigner des rôles</li>
-          </ol>
         </div>
-      </div>
+      )}
     </div>
   );
 }

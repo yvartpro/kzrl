@@ -10,6 +10,7 @@ const navigation = [
   { name: 'Ventes', href: '/sales', icon: DollarSign },
   { name: 'Caisse & Dépenses', href: '/cash-expenses', icon: Wallet },
   { name: 'Rapports', href: '/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
+  { name: 'Gestion Utilisateurs', href: '/users', icon: User, roles: ['ADMIN'] },
   { name: 'Paramètres', href: '/settings', icon: Settings, roles: ['ADMIN'] },
 ];
 

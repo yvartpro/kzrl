@@ -11,6 +11,7 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import CashExpenses from './pages/CashExpenses';
 import Login from './pages/Login';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -33,6 +34,11 @@ function App() {
               <Route path="reports" element={
                 <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
                   <Reports />
+                </ProtectedRoute>
+              } />
+              <Route path="users" element={
+                <ProtectedRoute roles={['ADMIN']}>
+                  <Users />
                 </ProtectedRoute>
               } />
               <Route path="settings" element={<Settings />} />
