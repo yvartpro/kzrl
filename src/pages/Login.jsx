@@ -13,7 +13,7 @@ const Login = () => {
   const location = useLocation();
   const toast = useToast();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/kzrl/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
