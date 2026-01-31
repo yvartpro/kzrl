@@ -134,30 +134,13 @@ const DocumentationPage = () => {
                 </li>
               ))}
             </ul>
-
-            <div className="mt-8 pt-8 border-t border-gray-50 flex justify-end">
-              <button className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
-                En savoir plus <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         ))}
       </div>
-
-      {/* Footer/Help section */}
-      <div className="mt-20 p-8 rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-center shadow-2xl">
-        <h3 className="text-2xl font-bold mb-4">Besoin d'aide supplémentaire ?</h3>
-        <p className="text-indigo-100 mb-8 max-w-2xl mx-auto">
-          Si vous ne trouvez pas la réponse à vos questions dans cette documentation, n'hésitez pas à contacter notre support technique ou à consulter les tutoriels vidéo.
+      <div className='mt-8 pt-8 border-t border-gray-50'>
+        <p className="text-center text-gray-500">
+          Powered by <a href="#" className='text-indigo-600 hover:text-indigo-700' target="_blank" rel="noopener noreferrer">Giraso</a>
         </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <button className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-lg">
-            Contacter le support
-          </button>
-          <button className="px-6 py-3 bg-indigo-500/30 text-white border border-indigo-400/50 rounded-xl font-bold hover:bg-indigo-500/40 transition-colors">
-            Tutoriels Vidéo
-          </button>
-        </div>
       </div>
     </div>
   );

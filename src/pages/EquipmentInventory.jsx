@@ -13,7 +13,7 @@ export default function EquipmentInventory() {
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeView, setActiveView] = useState('list'); // 'list', 'history', 'conducting'
+  const [activeView, setActiveView] = useState('list');
 
   const [equipment, setEquipment] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -21,7 +21,7 @@ export default function EquipmentInventory() {
   const [currentInventory, setCurrentInventory] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [openInventories, setOpenInventories] = useState([]); // Track all open inventories (per category)
+  const [openInventories, setOpenInventories] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
