@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, CheckCircle2, ShoppingCart, Package, DollarSign, Wallet, BarChart3, User, Settings, Info, ArrowRight } from 'lucide-react';
+import { Book, CheckCircle2, ShoppingCart, Package, DollarSign, Wallet, BarChart3, User, Settings, Info, ArrowRight, Briefcase } from 'lucide-react';
 
 const DocumentationPage = () => {
   const sections = [
@@ -27,11 +27,12 @@ const DocumentationPage = () => {
     {
       title: "Gestion des Stocks",
       icon: <Package className="h-6 w-6 text-blue-600" />,
-      content: "Suivez vos produits et évitez les ruptures de stock.",
+      content: "Suivez vos produits et évitez les ruptures de stock avec flexibilité.",
       items: [
-        "Ajout et modification de produits",
-        "Gestion des catégories et des prix",
-        "Alerte de stock bas",
+        "Conditionnement flexible (Carton ou Unité)",
+        "Conversion automatique Carton -> Bouteilles",
+        "Gestion des catégories par magasin",
+        "Alerte de stock bas et inventaire",
         "Historique des mouvements de stock"
       ]
     },
@@ -58,12 +59,23 @@ const DocumentationPage = () => {
       ]
     },
     {
+      title: "Gestion Multi-Magasins",
+      icon: <Briefcase className="h-6 w-6 text-indigo-600" />,
+      content: "Gérez plusieurs points de vente avec une isolation totale des données.",
+      items: [
+        "Stocks et inventaires séparés par magasin",
+        "Caisse et journal financier indépendants",
+        "Catégories de produits spécifiques au bar",
+        "Rapports de performance par établissement"
+      ]
+    },
+    {
       title: "Administration",
       icon: <Settings className="h-6 w-6 text-gray-600" />,
       content: "Configurez l'application selon vos besoins.",
       items: [
         "Gestion des utilisateurs et des permissions",
-        "Configuration des paramètres de l'établissement",
+        "Configuration des magasins et affectations",
         "Sauvegarde et restauration des données",
         "Personnalisation de l'interface"
       ]
