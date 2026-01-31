@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 const ToastContext = createContext(null);
@@ -31,12 +32,12 @@ export function ToastProvider({ children }) {
     return id;
   }, [removeToast]);
 
-  const toast = {
+  const toast = useMemo(() => ({
     success: (message, duration) => addToast(message, 'success', duration),
     error: (message, duration) => addToast(message, 'error', duration),
     warning: (message, duration) => addToast(message, 'warning', duration),
     info: (message, duration) => addToast(message, 'info', duration),
-  };
+  }), [addToast]);
 
   return (
     <ToastContext.Provider value={toast}>
