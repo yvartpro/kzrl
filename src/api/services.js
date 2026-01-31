@@ -1,7 +1,7 @@
 import api from './client';
 
 // Products
-export const getProducts = (storeId) => api.get('/products', { params: { storeId } });
+export const getProducts = (storeId, filterByStock) => api.get('/products', { params: { storeId, filterByStock } });
 export const createProduct = (data) => api.post('/products', data);
 export const updateProduct = (id, data) => api.patch(`/products/${id}`, data);
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
@@ -25,7 +25,7 @@ export const getPurchases = () => api.get('/purchases');
 export const createPurchase = (data) => api.post('/purchases', data);
 
 // Sales
-export const getSales = () => api.get('/sales');
+export const getSales = (storeId) => api.get('/sales', { params: { storeId } });
 export const createSale = (data) => api.post('/sales', data);
 export const createBulkSales = (data) => api.post('/sales/bulk', data);
 
@@ -44,7 +44,7 @@ export const getDailyReport = (date, storeId) => api.get('/reports/daily', { par
 export const getJournalReport = (params) => api.get('/reports/journal', { params });
 export const getStockValuation = (params) => api.get('/reports/stock-value', { params });
 export const getStockHealth = (storeId) => api.get('/reports/stock-health', { params: { storeId } });
-export const getGlobalCapital = () => api.get('/reports/global-capital');
+export const getGlobalCapital = (storeId) => api.get('/reports/global-capital', { params: { storeId } });
 
 // Users & Auth
 export const getUsers = () => api.get('/users');

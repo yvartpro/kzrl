@@ -57,7 +57,7 @@ export default function Settings() {
       const [categoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
         getCategories(),
         getSuppliers(),
-        getProducts(currentStore?.id),
+        getProducts(currentStore?.id, 'false'),
         getCashBalance(currentStore?.id),
         getStores()
       ]);

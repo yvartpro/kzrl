@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserPlus, Shield, UserX, UserCheck, Search, Users as UsersIcon, Lock, ShieldCheck, DollarSign, Edit2, X } from 'lucide-react';
-import { getUsers, createUser, toggleUserStatus, getRoles, updateUser, payStaff } from '../api/services';
+import { getUsers, createUser, toggleUserStatus, getRoles, updateUser, payStaff, getStores } from '../api/services';
 import { useToast } from '../components/Toast';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +14,8 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({ username: '', password: '', roleId: '', salary: 0 });
+  const [formData, setFormData] = useState({ username: '', password: '', roleId: '', salary: 0, storeIds: [] });
+  const [stores, setStores] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [paymentUser, setPaymentUser] = useState(null);
@@ -24,9 +25,10 @@ export default function Users() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [usersRes, rolesRes] = await Promise.all([getUsers(), getRoles()]);
+      const [usersRes, rolesRes, storesRes] = await Promise.all([getUsers(), getRoles(), getStores()]);
       setUsers(usersRes.data);
       setRoles(rolesRes.data);
+      setStores(storesRes.data);
     } catch (err) {
       console.error(err);
       toast.error('Échec du chargement des données');
@@ -52,7 +54,7 @@ export default function Users() {
       }
       setShowModal(false);
       setEditingUser(null);
-      setFormData({ username: '', password: '', roleId: '', salary: 0 });
+      setFormData({ username: '', password: '', roleId: '', salary: 0, storeIds: [] });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Échec de l\'opération');
@@ -145,11 +147,20 @@ export default function Users() {
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                            {user.username.charAt(0).toUpperCase()}
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                              {user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900">{user.username}</span>
                           </div>
-                          <span className="text-sm font-semibold text-gray-900">{user.username}</span>
+                          <div className="flex flex-wrap gap-1 mt-1 ml-13">
+                            {user.Stores?.map(s => (
+                              <span key={s.id} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 rounded border border-gray-200 uppercase font-black">
+                                {s.name}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -175,7 +186,12 @@ export default function Users() {
                         <button
                           onClick={() => {
                             setEditingUser(user);
-                            setFormData({ username: user.username, roleId: user.RoleId, salary: user.salary });
+                            setFormData({
+                              username: user.username,
+                              roleId: user.RoleId,
+                              salary: user.salary,
+                              storeIds: user.Stores?.map(s => s.id) || []
+                            });
                             setShowModal(true);
                           }}
                           className="p-1 hover:bg-indigo-50 text-indigo-600 rounded transition-colors"
@@ -247,7 +263,7 @@ export default function Users() {
             <div className="p-6 border-b flex justify-between items-center bg-gray-50">
               <h2 className="text-xl font-bold text-gray-900">{editingUser ? 'Modifier l\'Utilisateur' : 'Nouvel Utilisateur'}</h2>
               <button
-                onClick={() => { setShowModal(false); setEditingUser(null); }}
+                onClick={() => { setShowModal(false); setEditingUser(null); setFormData({ username: '', password: '', roleId: '', salary: 0, storeIds: [] }); }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="h-6 w-6" />
@@ -314,10 +330,35 @@ export default function Users() {
                   <p className="text-xs text-indigo-600 mt-1">En tant que manager, vous ne pouvez créer que des serveurs.</p>
                 )}
               </div>
+
+              {isAdmin && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Magasins Affectés</label>
+                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-xl bg-gray-50/50">
+                    {stores.map(store => (
+                      <label key={store.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          className="rounded text-indigo-600 focus:ring-indigo-500"
+                          checked={formData.storeIds?.includes(store.id)}
+                          onChange={(e) => {
+                            const newIds = e.target.checked
+                              ? [...formData.storeIds, store.id]
+                              : formData.storeIds.filter(id => id !== store.id);
+                            setFormData({ ...formData, storeIds: newIds });
+                          }}
+                        />
+                        <span className="text-xs font-semibold text-gray-700">{store.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => { setShowModal(false); setEditingUser(null); }}
+                  onClick={() => { setShowModal(false); setEditingUser(null); setFormData({ username: '', password: '', roleId: '', salary: 0, storeIds: [] }); }}
                   className="flex-1 px-4 py-2 border rounded-xl font-bold hover:bg-gray-50 transition-colors"
                 >
                   Annuler
@@ -401,8 +442,9 @@ export default function Users() {
             </form>
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
 

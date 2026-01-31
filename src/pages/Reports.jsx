@@ -38,7 +38,7 @@ export default function Reports() {
       setLoading(true);
       const [reportRes, capitalRes] = await Promise.all([
         getDailyReport(selectedDate, currentStore?.id),
-        getGlobalCapital()
+        getGlobalCapital(currentStore?.id)
       ]);
       setDailyReport(reportRes.data);
       setCapitalData(capitalRes.data);

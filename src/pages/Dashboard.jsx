@@ -23,9 +23,9 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
 
       const [salesRes, productsRes, capitalRes] = await Promise.all([
-        getSales(), // Would need storeId filter in backend too, but keeping it simple for now if it's already filtered
+        getSales(currentStore?.id),
         getProducts(currentStore?.id),
-        getGlobalCapital() // Global capital stays global
+        getGlobalCapital(currentStore?.id)
       ]);
 
       // Filter Sales for Today
