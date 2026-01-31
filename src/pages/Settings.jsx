@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Save, Store as StoreIcon } from 'lucide-react';
 import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance, getStores, createStore } from '../api/services';
 import ErrorMessage from '../components/ErrorMessage';
@@ -11,7 +11,7 @@ import { useStore } from '../contexts/StoreContext';
 
 export default function Settings() {
   const { user } = useAuth();
-  const { refreshStores } = useStore();
+  const { currentStore, refreshStores } = useStore();
   const isAdmin = user?.role === 'ADMIN';
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -50,19 +50,15 @@ export default function Settings() {
     onConfirm: () => { }
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const [categoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
         getCategories(),
         getSuppliers(),
-        getProducts(),
-        getCashBalance(),
+        getProducts(currentStore?.id),
+        getCashBalance(currentStore?.id),
         getStores()
       ]);
       setCategories(categoriesRes.data);
@@ -74,7 +70,9 @@ export default function Settings() {
       // Pre-fill stock init values with current stock
       const initialStock = {};
       productsRes.data.forEach(p => {
-        initialStock[p.id] = p.Stock?.quantity || 0;
+        const stockArr = p.Stocks || [];
+        const currentQty = Array.isArray(stockArr) ? (stockArr[0]?.quantity || 0) : (p.Stock?.quantity || 0);
+        initialStock[p.id] = currentQty;
       });
       setStockInitValues(initialStock);
     } catch (err) {
@@ -82,7 +80,11 @@ export default function Settings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStore]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
@@ -163,7 +165,10 @@ export default function Settings() {
         try {
           setInitializationLoading(true);
           setError(null);
-          await initializeCash({ amount: parseFloat(cashInitForm.amount) });
+          await initializeCash({
+            amount: parseFloat(cashInitForm.amount),
+            storeId: currentStore.id
+          });
           toast.success('Solde de caisse initialisé avec succès');
           fetchData();
         } catch (err) {
@@ -186,7 +191,11 @@ export default function Settings() {
         try {
           setInitializationLoading(true);
           setError(null);
-          await initializeStock({ productId, quantity: parseInt(stockInitValues[productId]) });
+          await initializeStock({
+            productId,
+            quantity: parseInt(stockInitValues[productId]),
+            storeId: currentStore.id
+          });
           toast.success('Stock mis à jour avec succès');
           fetchData();
         } catch (err) {
@@ -209,6 +218,13 @@ export default function Settings() {
         </h1>
         <p className="text-gray-600 mt-1">Gérer les catégories, fournisseurs et paramètres système</p>
       </div>
+
+      {!currentStore && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 flex items-center gap-3">
+          <StoreIcon className="h-5 w-5" />
+          <p className="font-medium">Veuillez sélectionner un magasin dans la barre latérale pour gérer l'initialisation du cash et du stock.</p>
+        </div>
+      )}
 
       {error && <ErrorMessage message={error} />}
 
@@ -555,7 +571,7 @@ export default function Settings() {
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Database className="h-5 w-5 text-green-600" />
-                Ouverture de Caisse
+                Ouverture de Caisse - {currentStore?.name || 'Globale'}
               </h2>
               <p className="text-sm text-gray-600 mb-6">
                 Définissez le montant initial présent dans la caisse lors de l'ouverture du bar.
@@ -600,7 +616,7 @@ export default function Settings() {
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-full flex flex-col">
               <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Tag className="h-5 w-5 text-blue-600" />
-                Inventaire Initial
+                Inventaire Initial - {currentStore?.name || 'Global'}
               </h2>
               <p className="text-sm text-gray-600 mb-6 font-medium">
                 Saisissez les quantités de produits déjà disponibles en stock.
