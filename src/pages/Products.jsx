@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Package, Plus, Search, X, Edit3 } from 'lucide-react';
 import { getProducts, getCategories, createProduct, updateProduct, adjustStock } from '../api/services';
 import { formatCurrency, getStockStatus, getStockStatusColor } from '../utils/format';
@@ -7,7 +7,10 @@ import ErrorMessage from '../components/ErrorMessage';
 import { TableSkeleton } from '../components/Skeletons';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function Products() {
+  const { currentStore } = useStore();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,26 +36,35 @@ export default function Products() {
     sellingPrice: 0,
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const [productsRes, categoriesRes] = await Promise.all([
-        getProducts(),
+        getProducts(currentStore?.id),
         getCategories(),
       ]);
-      setProducts(productsRes.data);
+
+      // Remap products to extract the correct stock for the current store
+      const mappedProducts = productsRes.data.map(p => ({
+        ...p,
+        Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
+      }));
+
+      setProducts(mappedProducts);
       setCategories(categoriesRes.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load products');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStore?.id]);
+
+  useEffect(() => {
+    if (currentStore) {
+      fetchData();
+    }
+  }, [currentStore, fetchData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,7 +110,10 @@ export default function Products() {
 
   const handleAdjustStock = async (adjustmentData) => {
     try {
-      await adjustStock(adjustmentData);
+      await adjustStock({
+        ...adjustmentData,
+        storeId: currentStore?.id
+      });
       toast.success('Stock ajusté avec succès');
       fetchData();
     } catch (err) {

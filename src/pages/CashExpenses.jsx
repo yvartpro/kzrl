@@ -8,7 +8,10 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatCard from '../components/StatCard';
 import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function CashExpenses() {
+  const { currentStore } = useStore();
   const [cashBalance, setCashBalance] = useState(0);
   const [expenses, setExpenses] = useState([]);
   const [movements, setMovements] = useState([]);
@@ -30,12 +33,13 @@ export default function CashExpenses() {
 
   const fetchData = useCallback(async () => {
     try {
+      if (!currentStore) return;
       setLoading(true);
       setError(null);
       const [balanceRes, expensesRes, movementsRes] = await Promise.all([
-        getCashBalance(),
-        getExpenses(dateRange),
-        getCashMovements(dateRange),
+        getCashBalance(currentStore.id),
+        getExpenses({ ...dateRange, storeId: currentStore.id }),
+        getCashMovements({ ...dateRange, storeId: currentStore.id }),
       ]);
       setCashBalance(balanceRes.data.balance);
       setExpenses(expensesRes.data);
@@ -45,7 +49,7 @@ export default function CashExpenses() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange]);
+  }, [dateRange, currentStore]);
 
   useEffect(() => {
     fetchData();
@@ -59,6 +63,7 @@ export default function CashExpenses() {
       await createExpense({
         description: expenseForm.description,
         amount: parseFloat(expenseForm.amount),
+        storeId: currentStore?.id
       });
       toast.success('Dépense enregistrée avec succès');
       setShowExpenseForm(false);

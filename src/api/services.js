@@ -1,10 +1,16 @@
 import api from './client';
 
 // Products
-export const getProducts = () => api.get('/products');
+export const getProducts = (storeId) => api.get('/products', { params: { storeId } });
 export const createProduct = (data) => api.post('/products', data);
 export const updateProduct = (id, data) => api.patch(`/products/${id}`, data);
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
+
+// Stores
+export const getStores = () => api.get('/stores');
+export const createStore = (data) => api.post('/stores', data);
+export const updateStore = (id, data) => api.patch(`/stores/${id}`, data);
+export const assignUserToStore = (data) => api.post('/stores/assign', data);
 
 // Categories
 export const getCategories = () => api.get('/categories');
@@ -25,19 +31,19 @@ export const createBulkSales = (data) => api.post('/sales/bulk', data);
 
 // Stock
 export const adjustStock = (data) => api.post('/stock/adjust', data);
-export const getStockMovements = (productId) => api.get(`/stock/movements/${productId}`);
+export const getStockMovements = (productId, storeId) => api.get(`/stock/movements/${productId}`, { params: { storeId } });
 
 // Cash
-export const getCashBalance = () => api.get('/cash/balance');
+export const getCashBalance = (storeId) => api.get('/cash/balance', { params: { storeId } });
 export const getCashMovements = (params) => api.get('/cash/movements', { params });
 export const createExpense = (data) => api.post('/cash/expenses', data);
 export const getExpenses = (params) => api.get('/cash/expenses', { params });
 
 // Reports
-export const getDailyReport = (date) => api.get('/reports/daily', { params: { date } });
+export const getDailyReport = (date, storeId) => api.get('/reports/daily', { params: { date, storeId } });
 export const getJournalReport = (params) => api.get('/reports/journal', { params });
 export const getStockValuation = (params) => api.get('/reports/stock-value', { params });
-export const getStockHealth = () => api.get('/reports/stock-health');
+export const getStockHealth = (storeId) => api.get('/reports/stock-health', { params: { storeId } });
 export const getGlobalCapital = () => api.get('/reports/global-capital');
 
 // Users & Auth

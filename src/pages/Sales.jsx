@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { getProducts, createSale } from '../api/services';
 import { formatCurrency } from '../utils/format';
@@ -7,7 +7,10 @@ import ErrorMessage from '../components/ErrorMessage';
 import { CardSkeleton } from '../components/Skeletons';
 import BulkSalesTable from '../components/BulkSalesTable';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function Sales() {
+  const { currentStore } = useStore();
   const [activeTab, setActiveTab] = useState('POS');
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -20,21 +23,28 @@ export default function Sales() {
 
   const toast = useToast();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await getProducts();
-      setProducts(res.data.filter(p => (p.Stock?.quantity || 0) > 0));
+      const res = await getProducts(currentStore?.id);
+      // Backend returns stock for current store in the Stock array or single object
+      // Based on our controller update, it returns an array of stocks filtered by store
+      setProducts(res.data.map(p => ({
+        ...p,
+        Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
+      })).filter(p => (p.Stock?.quantity || 0) > 0));
     } catch (err) {
       setError(err.response?.data?.error || 'Échec du chargement des produits');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStore?.id]);
+
+  useEffect(() => {
+    if (currentStore) {
+      fetchProducts();
+    }
+  }, [currentStore, fetchProducts]);
 
   const addToCart = (product) => {
     const existing = cart.find(item => item.productId === product.id);
@@ -86,6 +96,7 @@ export default function Sales() {
           quantity: item.quantity,
         })),
         paymentMethod,
+        storeId: currentStore?.id
       });
 
       setSuccess(true);

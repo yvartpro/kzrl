@@ -9,7 +9,10 @@ import StatCard from '../components/StatCard';
 import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
 import Skeleton from '../components/Skeleton';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function Reports() {
+  const { currentStore } = useStore();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyReport, setDailyReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +37,7 @@ export default function Reports() {
     try {
       setLoading(true);
       const [reportRes, capitalRes] = await Promise.all([
-        getDailyReport(selectedDate),
+        getDailyReport(selectedDate, currentStore?.id),
         getGlobalCapital()
       ]);
       setDailyReport(reportRes.data);
@@ -46,12 +49,18 @@ export default function Reports() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, toast]);
+  }, [selectedDate, currentStore?.id, toast]);
 
   const fetchJournal = useCallback(async (page = 1, search = '') => {
     try {
       setJournalLoading(true);
-      const res = await getJournalReport({ date: selectedDate, page, limit: 10, search });
+      const res = await getJournalReport({
+        date: selectedDate,
+        page,
+        limit: 10,
+        search,
+        storeId: currentStore?.id
+      });
       setJournalData(res.data);
     } catch (err) {
       console.error(err);
@@ -59,12 +68,18 @@ export default function Reports() {
     } finally {
       setJournalLoading(false);
     }
-  }, [selectedDate, toast]);
+  }, [selectedDate, currentStore?.id, toast]);
 
   const fetchStock = useCallback(async (page = 1, search = '') => {
     try {
       setStockLoading(true);
-      const res = await getStockValuation({ date: selectedDate, page, limit: 10, search });
+      const res = await getStockValuation({
+        date: selectedDate,
+        page,
+        limit: 10,
+        search,
+        storeId: currentStore?.id
+      });
       setStockData(res.data);
     } catch (err) {
       console.error(err);
@@ -72,7 +87,7 @@ export default function Reports() {
     } finally {
       setStockLoading(false);
     }
-  }, [selectedDate, toast]);
+  }, [selectedDate, currentStore?.id, toast]);
 
   // Initial fetch and summary update on date change
   useEffect(() => {

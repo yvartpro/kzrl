@@ -1,22 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { DollarSign, AlertTriangle, ShoppingBag, Landmark, Briefcase, Calculator, ShieldCheck } from 'lucide-react';
 import ErrorMessage from '../components/ErrorMessage';
 import { getSales, getProducts, getGlobalCapital } from '../api/services';
 import { formatCurrency, getStockStatus } from '../utils/format';
 import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function Dashboard() {
+  const { currentStore } = useStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [todaySales, setTodaySales] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [capitalData, setCapitalData] = useState({ liquidAssets: 0, stockValue: 0, globalCapital: 0 });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -24,9 +23,9 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
 
       const [salesRes, productsRes, capitalRes] = await Promise.all([
-        getSales(), // Note: Ideally backend should support date filtering
-        getProducts(),
-        getGlobalCapital()
+        getSales(), // Would need storeId filter in backend too, but keeping it simple for now if it's already filtered
+        getProducts(currentStore?.id),
+        getGlobalCapital() // Global capital stays global
       ]);
 
       // Filter Sales for Today
@@ -36,7 +35,10 @@ export default function Dashboard() {
       setTodaySales(salesToday);
 
       // Filter Low Stock
-      const lowStock = productsRes.data.filter(p => {
+      const lowStock = productsRes.data.map(p => ({
+        ...p,
+        Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
+      })).filter(p => {
         const status = getStockStatus(p.Stock?.quantity || 0);
         return status === 'LOW' || status === 'OUT';
       }).map(p => ({
@@ -54,7 +56,13 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStore?.id]);
+
+  useEffect(() => {
+    if (currentStore) {
+      fetchDashboardData();
+    }
+  }, [currentStore, fetchDashboardData]);
 
   return (
     <div>
