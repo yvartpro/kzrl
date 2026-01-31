@@ -13,7 +13,7 @@ export const updateStore = (id, data) => api.patch(`/stores/${id}`, data);
 export const assignUserToStore = (data) => api.post('/stores/assign', data);
 
 // Categories
-export const getCategories = () => api.get('/categories');
+export const getCategories = (storeId) => api.get('/categories', { params: { storeId } });
 export const createCategory = (data) => api.post('/categories', data);
 
 // Suppliers
@@ -21,7 +21,7 @@ export const getSuppliers = () => api.get('/suppliers');
 export const createSupplier = (data) => api.post('/suppliers', data);
 
 // Purchases
-export const getPurchases = () => api.get('/purchases');
+export const getPurchases = (storeId) => api.get('/purchases', { params: { storeId } });
 export const createPurchase = (data) => api.post('/purchases', data);
 
 // Sales

@@ -55,7 +55,7 @@ export default function Settings() {
       setLoading(true);
       setError(null);
       const [categoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
-        getCategories(),
+        getCategories(currentStore?.id),
         getSuppliers(),
         getProducts(currentStore?.id, 'false'),
         getCashBalance(currentStore?.id),
@@ -91,7 +91,7 @@ export default function Settings() {
     try {
       setCategorySubmitting(true);
       setError(null);
-      await createCategory({ name: categoryName });
+      await createCategory({ name: categoryName, StoreId: currentStore?.id });
       setCategoryName('');
       toast.success('Catégorie créée avec succès');
       fetchData();

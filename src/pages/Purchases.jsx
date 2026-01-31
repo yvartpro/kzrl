@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Package } from 'lucide-react';
 import { getPurchases, getSuppliers, getProducts, createPurchase } from '../api/services';
 import { formatCurrency, formatDateTime } from '../utils/format';
@@ -6,7 +6,10 @@ import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import { TableSkeleton } from '../components/Skeletons';
 
+import { useStore } from '../contexts/StoreContext';
+
 export default function Purchases() {
+  const { currentStore } = useStore();
   const [purchases, setPurchases] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -23,17 +26,13 @@ export default function Purchases() {
     notes: '',
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [purchasesRes, suppliersRes, productsRes] = await Promise.all([
-        getPurchases(),
+        getPurchases(currentStore?.id),
         getSuppliers(),
-        getProducts(),
+        getProducts(currentStore?.id, 'false'), // Get all products possibly sellable in this store
       ]);
       setPurchases(purchasesRes.data);
       setSuppliers(suppliersRes.data);
@@ -43,7 +42,11 @@ export default function Purchases() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStore?.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const addItem = () => {
     setFormData({
@@ -70,7 +73,7 @@ export default function Purchases() {
     try {
       setSubmitting(true);
       setError(null);
-      await createPurchase(formData);
+      await createPurchase({ ...formData, storeId: currentStore?.id });
       setShowForm(false);
       setFormData({
         supplierId: '',

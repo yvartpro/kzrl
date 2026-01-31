@@ -42,7 +42,7 @@ export default function Products() {
       setError(null);
       const [productsRes, categoriesRes] = await Promise.all([
         getProducts(currentStore?.id),
-        getCategories(),
+        getCategories(currentStore?.id),
       ]);
 
       // Remap products to extract the correct stock for the current store
@@ -83,7 +83,7 @@ export default function Products() {
         await updateProduct(editingProduct.id, payload);
         toast.success('Produit mis à jour avec succès');
       } else {
-        await createProduct(payload);
+        await createProduct({ ...payload, storeId: currentStore?.id });
         toast.success('Produit créé avec succès');
       }
 
