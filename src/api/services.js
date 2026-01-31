@@ -58,3 +58,16 @@ export const changePassword = (data) => api.post('/auth/change-password', data);
 // System Initialization
 export const initializeCash = (data) => api.post('/system/initialize-cash', data);
 export const initializeStock = (data) => api.post('/system/initialize-stock', data);
+// Equipment & Inventory
+// Equipment & Inventory
+export const getEquipmentCategories = (storeId) => api.get('/equipment/categories', { params: { storeId } });
+export const createEquipmentCategory = (data) => api.post('/equipment/categories', data);
+export const getEquipment = (storeId, categoryId) => api.get('/equipment', { params: { storeId, categoryId } });
+export const createEquipment = (data) => api.post('/equipment', data);
+export const updateEquipment = (id, data) => api.patch(`/equipment/${id}`, data);
+
+export const getInventories = (storeId) => api.get('/equipment/inventories', { params: { storeId } });
+export const getInventory = (id) => api.get(`/equipment/inventories/${id}`);
+export const startInventory = (data) => api.post('/equipment/inventories', data);
+export const updateInventoryItem = (id, data) => api.patch(`/equipment/inventories/items/${id}`, data);
+export const closeInventory = (id) => api.post(`/equipment/inventories/${id}/close`);

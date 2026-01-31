@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Save, Store as StoreIcon } from 'lucide-react';
-import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance, getStores, createStore } from '../api/services';
+import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Save, Store as StoreIcon, Briefcase } from 'lucide-react';
+import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance, getStores, createStore, getEquipmentCategories, createEquipmentCategory } from '../api/services';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
@@ -14,6 +14,7 @@ export default function Settings() {
   const { currentStore, refreshStores } = useStore();
   const isAdmin = user?.role === 'ADMIN';
   const [categories, setCategories] = useState([]);
+  const [equipmentCategories, setEquipmentCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ export default function Settings() {
 
   // Category form
   const [categoryName, setCategoryName] = useState('');
+  const [equipmentCategoryName, setEquipmentCategoryName] = useState('');
   const [categorySubmitting, setCategorySubmitting] = useState(false);
 
   // Supplier form
@@ -54,14 +56,16 @@ export default function Settings() {
     try {
       setLoading(true);
       setError(null);
-      const [categoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
+      const [categoriesRes, eqCategoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
         getCategories(currentStore?.id),
+        getEquipmentCategories(currentStore?.id),
         getSuppliers(),
         getProducts(currentStore?.id, 'false'),
         getCashBalance(currentStore?.id),
         getStores()
       ]);
       setCategories(categoriesRes.data);
+      setEquipmentCategories(eqCategoriesRes.data);
       setSuppliers(suppliersRes.data);
       setProducts(productsRes.data);
       setCashBalance(cashRes.data.balance ?? 0);
@@ -94,6 +98,22 @@ export default function Settings() {
       await createCategory({ name: categoryName, StoreId: currentStore?.id });
       setCategoryName('');
       toast.success('Catégorie créée avec succès');
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Échec de la création de la catégorie');
+    } finally {
+      setCategorySubmitting(false);
+    }
+  };
+
+  const handleCreateEquipmentCategory = async (e) => {
+    e.preventDefault();
+    try {
+      setCategorySubmitting(true);
+      setError(null);
+      await createEquipmentCategory({ name: equipmentCategoryName, storeId: currentStore?.id });
+      setEquipmentCategoryName('');
+      toast.success('Catégorie de matériel créée avec succès');
       fetchData();
     } catch (err) {
       setError(err.response?.data?.error || 'Échec de la création de la catégorie');
@@ -275,6 +295,16 @@ export default function Settings() {
               Initialisation
             </button>
           )}
+          <button
+            onClick={() => setActiveTab('equipment')}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'equipment'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <Briefcase className="h-4 w-4 inline mr-2" />
+            Matériel
+          </button>
         </nav>
       </div>
 
@@ -332,6 +362,68 @@ export default function Settings() {
                       <div className="flex items-center gap-3">
                         <Tag className="h-5 w-5 text-gray-400" />
                         <span className="font-medium text-gray-900">{category.name}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Equipment Categories Tab */}
+      {
+        activeTab === 'equipment' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Plus className="h-5 w-5 text-blue-600" />
+                Catégorie de Matériel
+              </h2>
+              <form onSubmit={handleCreateEquipmentCategory}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nom de la Catégorie (ex: Chaises, Marmites)
+                  </label>
+                  <input
+                    type="text"
+                    value={equipmentCategoryName}
+                    onChange={(e) => setEquipmentCategoryName(e.target.value)}
+                    placeholder="ex: Mobiliers, Ustensiles"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={categorySubmitting}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-md shadow-blue-50"
+                >
+                  <Plus className="h-5 w-5" />
+                  {categorySubmitting ? 'Création...' : 'Créer Catégorie'}
+                </button>
+              </form>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Catégories de Matériel ({loading ? '...' : equipmentCategories.length})
+              </h2>
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                {loading ? (
+                  <TableSkeleton rows={5} cols={1} />
+                ) : equipmentCategories.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">Aucune catégorie de matériel</p>
+                ) : (
+                  equipmentCategories.map((eq) => (
+                    <div
+                      key={eq.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 hover:bg-gray-100 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Briefcase className="h-5 w-5 text-gray-400" />
+                        <span className="font-medium text-gray-900">{eq.name}</span>
                       </div>
                     </div>
                   ))

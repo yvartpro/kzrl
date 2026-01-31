@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User, BookOpen, Store as StoreIcon } from 'lucide-react';
+import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User, BookOpen, Store as StoreIcon, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
@@ -10,6 +10,7 @@ const navigation = [
   { name: 'Achats', href: '/purchases', icon: ShoppingCart },
   { name: 'Ventes', href: '/sales', icon: DollarSign },
   { name: 'Caisse & Dépenses', href: '/cash-expenses', icon: Wallet },
+  { name: 'Inventaire Matériel', href: '/equipment-inventory', icon: Briefcase },
   { name: 'Salaires', href: '/salaries', icon: User, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Rapports', href: '/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Gestion Utilisateurs', href: '/users', icon: User, roles: ['ADMIN', 'MANAGER'] },

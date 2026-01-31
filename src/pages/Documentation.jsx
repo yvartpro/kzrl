@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, CheckCircle2, ShoppingCart, Package, DollarSign, Wallet, BarChart3, User, Settings, Info, ArrowRight, Briefcase } from 'lucide-react';
+import { Book, CheckCircle2, ShoppingCart, Package, DollarSign, Wallet, BarChart3, User, Settings, Info, ArrowRight, Briefcase, ClipboardList } from 'lucide-react';
 
 const DocumentationPage = () => {
   const sections = [
@@ -67,6 +67,17 @@ const DocumentationPage = () => {
         "Caisse et journal financier indépendants",
         "Catégories de produits spécifiques au bar",
         "Rapports de performance par établissement"
+      ]
+    },
+    {
+      title: "Inventaire Matériel",
+      icon: <ClipboardList className="h-6 w-6 text-amber-600" />,
+      content: "Suivez votre matériel fixe (mobilier, casiers, ustensiles) séparément du stock vendable.",
+      items: [
+        "Catégories spécifiques (Mobiliers, Verrerie...)",
+        "Sessions d'inventaire avec état (Bon, Abîmé, Perdu)",
+        "Historique complet des audits",
+        "Mise à jour automatique des quantités après clôture"
       ]
     },
     {
