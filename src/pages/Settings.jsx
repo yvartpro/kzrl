@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Save } from 'lucide-react';
-import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance } from '../api/services';
+import { Plus, Settings as SettingsIcon, Users, Tag, Lock, Database, Trash2, Save, Store as StoreIcon } from 'lucide-react';
+import { getCategories, createCategory, getSuppliers, createSupplier, changePassword, getProducts, initializeCash, initializeStock, getCashBalance, getStores, createStore } from '../api/services';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
 import { TableSkeleton, FormSkeleton } from '../components/Skeletons';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { useStore } from '../contexts/StoreContext';
 
 export default function Settings() {
   const { user } = useAuth();
+  const { refreshStores } = useStore();
   const isAdmin = user?.role === 'ADMIN';
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('categories');
@@ -27,6 +30,10 @@ export default function Settings() {
   // Password form
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+
+  // Store form
+  const [storeForm, setStoreForm] = useState({ name: '', description: '' });
+  const [storeSubmitting, setStoreSubmitting] = useState(false);
 
   // Initialization/Stock initialization state
   const [products, setProducts] = useState([]);
@@ -51,16 +58,18 @@ export default function Settings() {
     try {
       setLoading(true);
       setError(null);
-      const [categoriesRes, suppliersRes, productsRes, cashRes] = await Promise.all([
+      const [categoriesRes, suppliersRes, productsRes, cashRes, storesRes] = await Promise.all([
         getCategories(),
         getSuppliers(),
         getProducts(),
-        getCashBalance()
+        getCashBalance(),
+        getStores()
       ]);
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
       setProducts(productsRes.data);
-      setCashBalance(cashRes.data);
+      setCashBalance(cashRes.data.balance || cashRes.data);
+      setStores(storesRes.data);
 
       // Pre-fill stock init values with current stock
       const initialStock = {};
@@ -104,6 +113,23 @@ export default function Settings() {
       setError(err.response?.data?.error || 'Échec de la création du fournisseur');
     } finally {
       setSupplierSubmitting(false);
+    }
+  };
+
+  const handleCreateStore = async (e) => {
+    e.preventDefault();
+    try {
+      setStoreSubmitting(true);
+      setError(null);
+      await createStore(storeForm);
+      setStoreForm({ name: '', description: '' });
+      toast.success('Magasin créé avec succès');
+      refreshStores();
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Échec de la création du magasin');
+    } finally {
+      setStoreSubmitting(false);
     }
   };
 
@@ -209,6 +235,18 @@ export default function Settings() {
             <Users className="h-4 w-4 inline mr-2" />
             Fournisseurs
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('stores')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'stores'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              <StoreIcon className="h-4 w-4 inline mr-2" />
+              Magasins
+            </button>
+          )}
           {isAdmin && (
             <button
               onClick={() => setActiveTab('init')}
@@ -358,6 +396,89 @@ export default function Settings() {
                       {supplier.contact && (
                         <p className="text-sm text-gray-600 ml-8">{supplier.contact}</p>
                       )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Stores Tab */}
+      {
+        activeTab === 'stores' && isAdmin && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Create Store Form */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Plus className="h-5 w-5 text-blue-600" />
+                Nouveau Magasin / Dépôt
+              </h2>
+              <form onSubmit={handleCreateStore}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nom du Magasin
+                  </label>
+                  <input
+                    type="text"
+                    value={storeForm.name}
+                    onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })}
+                    placeholder="ex: Bar Central, Stock Principal..."
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description / Localisation
+                  </label>
+                  <input
+                    type="text"
+                    value={storeForm.description}
+                    onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })}
+                    placeholder="ex: Rez-de-chaussée, Entrepôt A..."
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={storeSubmitting}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-300 transition-all shadow-md shadow-blue-50"
+                >
+                  <Plus className="h-5 w-5" />
+                  {storeSubmitting ? 'Création...' : 'Créer le Magasin'}
+                </button>
+              </form>
+            </div>
+
+            {/* Stores List */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Magasins Actifs ({loading ? '...' : stores.length})
+              </h2>
+              <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                {loading ? (
+                  <TableSkeleton rows={3} cols={1} />
+                ) : stores.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">Aucun magasin configuré</p>
+                ) : (
+                  stores.map((store) => (
+                    <div
+                      key={store.id}
+                      className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                    >
+                      <div className="flex items-center gap-3 mb-1">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <StoreIcon className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <span className="font-black text-gray-900">{store.name}</span>
+                          {store.description && (
+                            <p className="text-xs text-gray-500 font-medium">{store.description}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))
                 )}
