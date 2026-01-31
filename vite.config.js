@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/kzrl/api': 'http://localhost:3000',
+      '/api': 'http://localhost:3000',
     },
   },
   base: "/kzrl",
