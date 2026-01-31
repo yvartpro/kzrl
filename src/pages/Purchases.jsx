@@ -36,7 +36,13 @@ export default function Purchases() {
       ]);
       setPurchases(purchasesRes.data);
       setSuppliers(suppliersRes.data);
-      setProducts(productsRes.data);
+
+      // Remap products to extract the correct stock for the current store
+      const mappedProducts = productsRes.data.map(p => ({
+        ...p,
+        Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
+      }));
+      setProducts(mappedProducts);
     } catch (err) {
       setError(err.response?.data?.error || 'Échec du chargement des données');
     } finally {
@@ -174,7 +180,7 @@ export default function Purchases() {
                   >
                     <option value="">Sélectionner produit</option>
                     {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id}>{p.name} ({p.Stock?.quantity || 0} en stock)</option>
                     ))}
                   </select>
                   <input
