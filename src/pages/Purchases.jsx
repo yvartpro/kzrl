@@ -188,7 +188,10 @@ export default function Purchases() {
                     min="1"
                     value={item.quantityBoxes}
                     onChange={(e) => updateItem(index, 'quantityBoxes', parseInt(e.target.value))}
-                    placeholder="Cartons"
+                    placeholder={(() => {
+                      const p = products.find(prod => prod.id === item.productId);
+                      return p?.purchaseUnit === 'BOX' ? 'Cartons' : 'Unités';
+                    })()}
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -197,7 +200,10 @@ export default function Purchases() {
                     min="0"
                     value={item.unitPriceBox}
                     onChange={(e) => updateItem(index, 'unitPriceBox', parseFloat(e.target.value))}
-                    placeholder="Prix par carton"
+                    placeholder={(() => {
+                      const p = products.find(prod => prod.id === item.productId);
+                      return p?.purchaseUnit === 'BOX' ? 'Prix par carton' : 'Prix par unité';
+                    })()}
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                     required
                   />

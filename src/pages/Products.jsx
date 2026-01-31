@@ -229,22 +229,46 @@ export default function Products() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unités par Carton *
+                    Unité d'Achat *
                   </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.unitsPerBox}
-                    onChange={(e) => setFormData({ ...formData, unitsPerBox: e.target.value })}
+                  <select
+                    value={formData.purchaseUnit}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({
+                        ...formData,
+                        purchaseUnit: val,
+                        unitsPerBox: val === 'UNIT' ? 1 : formData.unitsPerBox
+                      });
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Combien d'unités dans un carton ?</p>
+                  >
+                    <option value="BOX">Carton / Pack</option>
+                    <option value="UNIT">Pièce / Unité</option>
+                  </select>
                 </div>
+
+                {formData.purchaseUnit === 'BOX' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Unités par Carton *
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.unitsPerBox}
+                      onChange={(e) => setFormData({ ...formData, unitsPerBox: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Combien d'unités dans un carton ?</p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prix d'Achat (par carton) *
+                    Prix d'Achat (par {formData.purchaseUnit === 'BOX' ? 'carton' : 'unité'}) *
                   </label>
                   <input
                     type="number"
@@ -275,12 +299,12 @@ export default function Products() {
                 </div>
               </div>
 
-              {formData.purchasePrice > 0 && formData.unitsPerBox > 0 && formData.sellingPrice > 0 && (
+              {formData.purchasePrice > 0 && formData.sellingPrice > 0 && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Coût Unitaire :</strong> {formatCurrency(formData.purchasePrice / formData.unitsPerBox)}
+                    <strong>Coût Unitaire :</strong> {formatCurrency(formData.purchasePrice / (formData.purchaseUnit === 'BOX' ? formData.unitsPerBox : 1))}
                     <br />
-                    <strong>Profit par Unité :</strong> {formatCurrency(formData.sellingPrice - (formData.purchasePrice / formData.unitsPerBox))}
+                    <strong>Profit par Unité :</strong> {formatCurrency(formData.sellingPrice - (formData.purchasePrice / (formData.purchaseUnit === 'BOX' ? formData.unitsPerBox : 1)))}
                   </p>
                 </div>
               )}
@@ -342,7 +366,7 @@ export default function Products() {
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Produit</th>
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Catégorie</th>
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Stock</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">U/Carton</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Condit.</th>
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Achat</th>
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Vente</th>
                   <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Statut</th>
@@ -378,10 +402,10 @@ export default function Products() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {product.unitsPerBox}
+                          {product.purchaseUnit === 'BOX' ? `${product.unitsPerBox} units/box` : 'Unité'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(product.purchasePrice)} / carton
+                          {formatCurrency(product.purchasePrice)} / {product.purchaseUnit === 'BOX' ? 'carton' : 'unité'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatCurrency(product.sellingPrice)} / unité
