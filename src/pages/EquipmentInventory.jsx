@@ -21,7 +21,7 @@ export default function EquipmentInventory() {
   const [currentInventory, setCurrentInventory] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [openInventory, setOpenInventory] = useState(null); // Track if there's an open inventory
+  const [openInventories, setOpenInventories] = useState([]); // Track all open inventories (per category)
   const [showAddModal, setShowAddModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,9 +44,9 @@ export default function EquipmentInventory() {
       setEquipment(eqRes.data);
       setCategories(catRes.data);
       setInventories(invRes.data);
-      // Check for an open inventory
-      const openInv = invRes.data.find(inv => inv.status === 'OPEN');
-      setOpenInventory(openInv);
+      // Check for all open inventories
+      const openInvs = invRes.data.filter(inv => inv.status === 'OPEN');
+      setOpenInventories(openInvs);
     } catch (err) {
       console.error(err);
       setError('Échec du chargement du matériel');
@@ -76,17 +76,30 @@ export default function EquipmentInventory() {
     }
   };
 
-  const handleStartInventory = async () => {
+  const handleStartInventory = async (categoryId = null) => {
     try {
       setSubmitting(true);
-      const res = await startInventory({ storeId: currentStore.id });
+      const res = await startInventory({ storeId: currentStore.id, categoryId });
       const fullInventory = await getInventory(res.data.id);
       setCurrentInventory(fullInventory.data);
       setActiveView('conducting');
       toast.success('Session d’inventaire démarrée');
     } catch (err) {
       console.error(err);
-      toast.error('Erreur lors du démarrage de l’inventaire');
+      toast.error(err.response?.data?.error || 'Erreur lors du démarrage de l’inventaire');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResumeInventory = async (inventoryId) => {
+    setSubmitting(true);
+    try {
+      const res = await getInventory(inventoryId);
+      setCurrentInventory(res.data);
+      setActiveView('conducting');
+    } catch (err) {
+      toast.error('Erreur lors de la reprise de l’inventaire');
     } finally {
       setSubmitting(false);
     }
@@ -191,36 +204,7 @@ export default function EquipmentInventory() {
             </div>
           </div>
 
-          {openInventory ? (
-            <button
-              onClick={async () => {
-                setSubmitting(true);
-                try {
-                  const res = await getInventory(openInventory.id);
-                  setCurrentInventory(res.data);
-                  setActiveView('conducting');
-                } catch (err) {
-                  toast.error('Erreur lors de la reprise de l’inventaire');
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-              disabled={submitting}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-amber-500 text-white rounded-2xl font-black hover:bg-amber-600 transition-all shadow-lg shadow-amber-50"
-            >
-              <ClipboardList className="h-5 w-5" />
-              Reprendre l'inventaire
-            </button>
-          ) : (
-            <button
-              onClick={handleStartInventory}
-              disabled={submitting}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-50"
-            >
-              <CheckCircle2 className="h-5 w-5" />
-              Lancer Inventaire
-            </button>
-          )}
+
 
           {/* Equipment Grid */}
           {
@@ -258,6 +242,35 @@ export default function EquipmentInventory() {
                         <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
                           {categoryItems.length} article{categoryItems.length > 1 ? 's' : ''}
                         </span>
+                      </div>
+
+                      {/* Inventory Actions per Category */}
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const openCategoryInv = openInventories.find(inv => inv.EquipmentCategoryId === category.id);
+
+                          if (openCategoryInv) {
+                            return (
+                              <button
+                                onClick={() => handleResumeInventory(openCategoryInv.id)}
+                                className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-black hover:bg-amber-200 transition-colors"
+                              >
+                                <ClipboardList className="h-3 w-3" />
+                                Reprendre
+                              </button>
+                            );
+                          }
+
+                          return (
+                            <button
+                              onClick={() => handleStartInventory(category.id)}
+                              className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-black hover:bg-emerald-200 transition-colors"
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                              Lancer Inventaire
+                            </button>
+                          );
+                        })()}
                       </div>
 
                       <div className="overflow-x-auto">
