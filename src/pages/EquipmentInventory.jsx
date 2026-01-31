@@ -210,31 +210,59 @@ export default function EquipmentInventory() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEquipment.map(item => (
-                <div key={item.id} className="bg-white rounded-3xl border border-gray-100 p-6 hover:shadow-xl hover:shadow-gray-100 transition-all group overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Briefcase className="h-12 w-12 text-blue-600" />
-                  </div>
+            <div className="space-y-8">
+              {[...categories, { id: null, name: 'Sans Catégorie' }].map(category => {
+                const categoryItems = filteredEquipment.filter(item =>
+                  category.id ? item.EquipmentCategoryId === category.id : !item.EquipmentCategoryId
+                );
 
-                  <div className="mb-4">
-                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-wider">
-                      {item.EquipmentCategory?.name || 'Sans Catégorie'}
-                    </span>
-                    <h3 className="text-xl font-black text-gray-900 mt-2">{item.name}</h3>
-                    {item.description && (
-                      <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
-                    )}
-                  </div>
+                if (categoryItems.length === 0) return null;
 
-                  <div className="flex items-end justify-between mt-6">
-                    <div>
-                      <p className="text-xs text-gray-400 font-black uppercase tracking-widest mb-1">En Stock</p>
-                      <p className="text-3xl font-black text-gray-900">{item.quantity}</p>
+                return (
+                  <div key={category.id || 'uncategorized'} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="p-2 bg-white rounded-lg border border-gray-100 shadow-sm text-blue-600">
+                          <Briefcase className="h-5 w-5" />
+                        </span>
+                        <h3 className="text-lg font-black text-gray-900">{category.name}</h3>
+                      </div>
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
+                        {categoryItems.length} article{categoryItems.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-50">
+                        <thead className="bg-white">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Nom</th>
+                            <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Description</th>
+                            <th className="px-6 py-3 text-center text-xs font-black text-gray-400 uppercase tracking-wider">Quantité</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {categoryItems.map(item => (
+                            <tr key={item.id} className="hover:bg-gray-50 transition-colors bg-white">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="font-bold text-gray-900">{item.name}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-sm text-gray-500 line-clamp-1">{item.description || '-'}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <span className="inline-flex items-center justify-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg font-black text-sm">
+                                  {item.quantity}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
