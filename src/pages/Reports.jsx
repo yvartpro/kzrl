@@ -6,8 +6,7 @@ import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatCard from '../components/StatCard';
-import { CardSkeleton, TableSkeleton } from '../components/Skeletons';
-import Skeleton from '../components/Skeleton';
+import { CardSkeleton, TableSkeleton, Skeleton } from '../components/Skeletons';
 
 import { useStore } from '../contexts/StoreContext';
 

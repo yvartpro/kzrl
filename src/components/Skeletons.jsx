@@ -1,4 +1,5 @@
 import Skeleton from './Skeleton';
+export { Skeleton };
 
 export const TableSkeleton = ({ rows = 5, cols = 4 }) => (
   <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">

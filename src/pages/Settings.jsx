@@ -4,8 +4,7 @@ import { getCategories, createCategory, getSuppliers, createSupplier, changePass
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../components/Toast';
-import { TableSkeleton, FormSkeleton } from '../components/Skeletons';
-import Skeleton from '../components/Skeleton';
+import { TableSkeleton, FormSkeleton, Skeleton } from '../components/Skeletons';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
@@ -65,7 +64,7 @@ export default function Settings() {
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
       setProducts(productsRes.data);
-      setCashBalance(cashRes.data.balance || cashRes.data);
+      setCashBalance(cashRes.data.balance ?? 0);
       setStores(storesRes.data);
 
       // Pre-fill stock init values with current stock
