@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { updateProduct, getCategories, getSuppliers } from '../api/services';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Plus, Trash2, ClipboardList } from 'lucide-react';
+import { updateProduct, getCategories, getSuppliers, getProducts } from '../api/services';
 import { useToast } from './Toast';
 
 export default function ProductEditModal({ product, onClose, onSuccess }) {
@@ -8,13 +8,19 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
     name: '',
     categoryId: '',
     supplierId: '',
-    boxQuantity: '',
-    unitsPerBox: '',
-    unitCost: '',
-    sellingPrice: ''
+    purchaseUnit: 'BOX',
+    baseUnit: 'UNIT',
+    unitsPerBox: '1',
+    purchasePrice: '',
+    sellingPrice: '',
+    type: 'GENERAL',
+    nature: 'FINISHED_GOOD',
   });
+
+  const [compositions, setCompositions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [availableIngredients, setAvailableIngredients] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
@@ -24,228 +30,284 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
         name: product.name || '',
         categoryId: product.CategoryId || product.Category?.id || '',
         supplierId: product.SupplierId || product.Supplier?.id || '',
-        boxQuantity: product.boxQuantity || '',
-        unitsPerBox: product.unitsPerBox || '',
-        unitCost: product.unitCost || '',
-        sellingPrice: product.sellingPrice || ''
+        purchaseUnit: product.purchaseUnit || 'BOX',
+        baseUnit: product.baseUnit || 'UNIT',
+        unitsPerBox: product.unitsPerBox || '1',
+        purchasePrice: product.purchasePrice || '',
+        sellingPrice: product.sellingPrice || '',
+        type: product.type || 'GENERAL',
+        nature: product.nature || 'FINISHED_GOOD',
       });
+      setCompositions(product.compositions || []);
     }
     fetchData();
-  }, [product]);
+  }, [product, fetchData]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const [categoriesRes, suppliersRes] = await Promise.all([
+      const [categoriesRes, suppliersRes, productsRes] = await Promise.all([
         getCategories(),
-        getSuppliers()
+        getSuppliers(),
+        getProducts() // Fetch all to find ingredients
       ]);
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
+      setAvailableIngredients(productsRes.data.filter(p => p.nature === 'RAW_MATERIAL' && p.id !== product?.id));
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
-  };
+  }, [product?.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const calculateMargin = () => {
-    const cost = parseFloat(formData.unitCost) || 0;
-    const price = parseFloat(formData.sellingPrice) || 0;
-    const margin = price - cost;
-    const marginPercent = cost > 0 ? ((margin / cost) * 100).toFixed(2) : 0;
-    return { margin, marginPercent };
+  const calculateUnitCost = () => {
+    if (formData.nature === 'FINISHED_GOOD' && compositions.length > 0) {
+      // Cost from ingredients
+      return compositions.reduce((total, comp) => {
+        const ingredient = availableIngredients.find(ing => ing.id === comp.componentProductId);
+        if (!ingredient) return total;
+        const ingUnitCost = Number(ingredient.purchasePrice) / Number(ingredient.unitsPerBox);
+        return total + (ingUnitCost * Number(comp.quantity));
+      }, 0);
+    }
+    // Standard cost
+    const pPrice = parseFloat(formData.purchasePrice) || 0;
+    const conv = parseFloat(formData.unitsPerBox) || 1;
+    return pPrice / conv;
   };
+
+  const unitCost = calculateUnitCost();
+  const sellingPrice = parseFloat(formData.sellingPrice) || 0;
+  const margin = sellingPrice - unitCost;
+  const marginPercent = unitCost > 0 ? ((margin / unitCost) * 100).toFixed(2) : 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Only send changed fields
-      const updates = {};
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== '') {
-          updates[key] = formData[key];
-        }
-      });
+      const payload = {
+        ...formData,
+        compositions: compositions.map(c => ({
+          componentProductId: c.componentProductId,
+          quantity: c.quantity
+        }))
+      };
 
-      await updateProduct(product.id, updates);
+      await updateProduct(product.id, payload);
       toast.success('Produit mis à jour avec succès');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Update product error:', error);
-      toast.error(error.response?.data?.error || 'Échec de la mise à jour du produit');
+      toast.error(error.response?.data?.error || 'Échec de la mise à jour');
     } finally {
       setLoading(false);
     }
   };
 
-  const { margin, marginPercent } = calculateMargin();
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Modifier Produit</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-5 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+              <ClipboardList className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-gray-900">Configuration Produit</h2>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{product.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <X className="h-6 w-6 text-gray-400" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Product Name */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nom du Produit
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+        <form onSubmit={handleSubmit} className="p-8">
+          <div className="space-y-8">
+            {/* Section: Classification */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-tighter">Classification & Type</h3>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Usage / Contexte</label>
+                <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="BAR">Bar (Boissons / Vins)</option>
+                  <option value="RESTAURANT">Restaurant (Cuisine / Buffet)</option>
+                  <option value="GENERAL">Général (Consommables / Divers)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Nature du Produit</label>
+                <select name="nature" value={formData.nature} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="RAW_MATERIAL">Matière Première (Ingrédient)</option>
+                  <option value="FINISHED_GOOD">Produit Fini (Vendu tel quel)</option>
+                  <option value="SERVICE">Service (Main d'oeuvre / Prestation)</option>
+                </select>
+              </div>
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Catégorie
-              </label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Sélectionner Catégorie</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
+            {/* Section: Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Nom du Produit</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" required />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Catégorie</label>
+                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="">Sélectionner...</option>
+                  {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Fournisseur Habituel</label>
+                <select name="supplierId" value={formData.supplierId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="">Sélectionner...</option>
+                  {suppliers.map(sup => (<option key={sup.id} value={sup.id}>{sup.name}</option>))}
+                </select>
+              </div>
             </div>
 
-            {/* Supplier */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fournisseur
-              </label>
-              <select
-                name="supplierId"
-                value={formData.supplierId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Sélectionner Fournisseur</option>
-                {suppliers.map(sup => (
-                  <option key={sup.id} value={sup.id}>{sup.name}</option>
-                ))}
-              </select>
+            {/* Section: Units & Logic */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-3">
+                <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-tighter">Unités & Stockage</h3>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité d'Achat</label>
+                <select name="purchaseUnit" value={formData.purchaseUnit} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="BOX">Carton / Caisse</option>
+                  <option value="UNIT">Unité / Pièce</option>
+                  <option value="KG">Kilogramme (KG)</option>
+                  <option value="L">Litre (L)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité de Base (Stock)</label>
+                <select name="baseUnit" value={formData.baseUnit} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                  <option value="UNIT">Pièce / Bouteille</option>
+                  <option value="KG">Kilogramme (KG)</option>
+                  <option value="G">Gramme (G)</option>
+                  <option value="L">Litre (L)</option>
+                  <option value="ML">Millilitre (ML)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Facteur Conversion</label>
+                <input type="number" step="0.001" name="unitsPerBox" value={formData.unitsPerBox} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="Ex: 24" />
+              </div>
             </div>
 
-            {/* Box Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantité Carton
-              </label>
-              <input
-                type="number"
-                name="boxQuantity"
-                value={formData.boxQuantity}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                min="0"
-              />
-            </div>
+            {/* Section: Pricing */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-tighter">Tarification & Rentabilité</h3>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix d'Achat (par {formData.purchaseUnit})</label>
+                <input type="number" name="purchasePrice" value={formData.purchasePrice} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix de Vente (par {formData.baseUnit})</label>
+                <input type="number" name="sellingPrice" value={formData.sellingPrice} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" />
+              </div>
 
-            {/* Units per Box */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unités par Carton
-              </label>
-              <input
-                type="number"
-                name="unitsPerBox"
-                value={formData.unitsPerBox}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                min="0"
-              />
-            </div>
-
-            {/* Unit Cost */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Coût Unitaire (Prix de Revient)
-              </label>
-              <input
-                type="number"
-                name="unitCost"
-                value={formData.unitCost}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            {/* Selling Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prix de Vente
-              </label>
-              <input
-                type="number"
-                name="sellingPrice"
-                value={formData.sellingPrice}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            {/* Margin Display */}
-            <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Marge (FBu)</p>
-                  <p className="text-lg font-bold text-gray-900">{margin.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Marge (%)</p>
-                  <p className="text-lg font-bold text-gray-900">{marginPercent}%</p>
+              <div className="md:col-span-2 p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
+                <div className="grid grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-1">Coût de Revient ({formData.baseUnit})</p>
+                    <p className="text-xl font-black text-emerald-900">{unitCost.toLocaleString()} FBu</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-1">Marge Brute</p>
+                    <p className="text-xl font-black text-emerald-900">{margin.toLocaleString()} FBu</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-1">% Marge</p>
+                    <p className="text-xl font-black text-emerald-900">{marginPercent}%</p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Section: Composition (If Finished Good) */}
+            {formData.nature === 'FINISHED_GOOD' && (
+              <div className="space-y-4 border-t border-gray-100 pt-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-tighter">Composition / Recette</h3>
+                    <p className="text-xs text-gray-400 font-medium">Définissez les ingrédients consommés lors de la vente.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCompositions([...compositions, { componentProductId: '', quantity: 1 }])}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
+                  >
+                    <Plus className="h-4 w-4" /> Ajouter
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {compositions.map((comp, idx) => (
+                    <div key={idx} className="flex gap-4 items-end bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <div className="flex-1">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Ingrédient</label>
+                        <select
+                          value={comp.componentProductId}
+                          onChange={(e) => {
+                            const newComps = [...compositions];
+                            newComps[idx].componentProductId = e.target.value;
+                            setCompositions(newComps);
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 text-sm"
+                        >
+                          <option value="">Sélectionner...</option>
+                          {availableIngredients.map(ing => (
+                            <option key={ing.id} value={ing.id}>{ing.name} ({ing.baseUnit})</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="w-40">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Quantité ({availableIngredients.find(i => i.id === comp.componentProductId)?.baseUnit || '?'})</label>
+                        <input
+                          type="number" step="0.001" value={comp.quantity}
+                          onChange={(e) => {
+                            const newComps = [...compositions];
+                            newComps[idx].quantity = e.target.value;
+                            setCompositions(newComps);
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 text-sm"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCompositions(compositions.filter((_, i) => i !== idx))}
+                        className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                  {compositions.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-3xl">
+                      <p className="text-sm text-gray-400 font-bold">Aucune composition définie. Le produit sera décompté de son propre stock.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Mise à jour...' : 'Mettre à jour'}
+          <div className="flex gap-4 mt-12 bg-white sticky bottom-0 border-t border-gray-50 pt-6">
+            <button type="button" onClick={onClose} className="flex-1 px-8 py-4 border border-gray-200 text-gray-400 rounded-2xl font-black hover:bg-gray-50 transition-all">Annuler</button>
+            <button type="submit" disabled={loading} className="flex-1 px-8 py-4 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              {loading ? 'Enregistrement...' : 'Mettre à jour Configuration'}
             </button>
           </div>
         </form>

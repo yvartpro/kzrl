@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Package, Plus, Search, X, Edit3 } from 'lucide-react';
-import { getProducts, getCategories, createProduct, updateProduct, adjustStock } from '../api/services';
+import { Package, Plus, Search, X, Edit3, Beef, Wine, Layers } from 'lucide-react';
+import { getProducts, getCategories, adjustStock } from '../api/services';
 import { formatCurrency, getStockStatus, getStockStatusColor } from '../utils/format';
-import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
 import { TableSkeleton } from '../components/Skeletons';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
-
+import ProductEditModal from '../components/ProductEditModal';
 import { useStore } from '../contexts/StoreContext';
 
 export default function Products() {
@@ -18,40 +17,23 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const toast = useToast();
-
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    CategoryId: '',
-    purchaseUnit: 'BOX',
-    baseUnit: 'UNIT',
-    unitsPerBox: 1,
-    purchasePrice: 0,
-    sellingPrice: 0,
-  });
-
   const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const [productsRes, categoriesRes] = await Promise.all([
         getProducts(currentStore?.id),
         getCategories(currentStore?.id),
       ]);
 
-      // Remap products to extract the correct stock for the current store
-      const mappedProducts = productsRes.data.map(p => ({
+      setProducts(productsRes.data.map(p => ({
         ...p,
         Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
-      }));
-
-      setProducts(mappedProducts);
+      })));
       setCategories(categoriesRes.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load products');
@@ -60,66 +42,12 @@ export default function Products() {
     }
   }, [currentStore?.id]);
 
-  useEffect(() => {
-    if (currentStore) {
-      fetchData();
-    }
-  }, [currentStore, fetchData]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setSubmitting(true);
-      setError(null);
-
-      const payload = {
-        ...formData,
-        unitsPerBox: parseInt(formData.unitsPerBox),
-        purchasePrice: parseFloat(formData.purchasePrice),
-        sellingPrice: parseFloat(formData.sellingPrice),
-      };
-
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, payload);
-        toast.success('Produit mis à jour avec succès');
-      } else {
-        await createProduct({ ...payload, storeId: currentStore?.id });
-        toast.success('Produit créé avec succès');
-      }
-
-      setShowModal(false);
-      setEditingProduct(null);
-      setFormData({
-        name: '',
-        description: '',
-        CategoryId: '',
-        purchaseUnit: 'BOX',
-        baseUnit: 'UNIT',
-        unitsPerBox: 1,
-        purchasePrice: 0,
-        sellingPrice: 0,
-      });
-      fetchData();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Échec de l\'opération');
-      toast.error('Échec de l\'opération');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const handleAdjustStock = async (adjustmentData) => {
-    try {
-      await adjustStock({
-        ...adjustmentData,
-        storeId: currentStore?.id
-      });
-      toast.success('Stock ajusté avec succès');
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Échec de l\'ajustement du stock');
-      throw err;
-    }
+    await adjustStock({
+      ...adjustmentData,
+      storeId: currentStore?.id
+    });
+    fetchData();
   };
 
   const openAdjustModal = (product) => {
@@ -127,20 +55,12 @@ export default function Products() {
     setShowAdjustModal(true);
   };
 
-  const openEditModal = (product) => {
-    setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      description: product.description || '',
-      CategoryId: product.CategoryId,
-      purchaseUnit: product.purchaseUnit,
-      baseUnit: product.baseUnit,
-      unitsPerBox: product.unitsPerBox,
-      purchasePrice: product.purchasePrice,
-      sellingPrice: product.sellingPrice,
-    });
-    setShowModal(true);
-  };
+  useEffect(() => {
+    if (currentStore) {
+      fetchData();
+    }
+  }, [currentStore, fetchData]);
+
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -150,212 +70,47 @@ export default function Products() {
 
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produits & Stock</h1>
-          <p className="text-gray-600 mt-1">Gérer votre inventaire</p>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tighter">Produits & Inventaire</h1>
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Gérer le stock multi-contextuel (Bar & Restaurant)</p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          onClick={() => { setEditingProduct(null); setShowModal(true); }}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200"
         >
           <Plus className="h-5 w-5" />
-          Ajouter Produit
+          Nouveau Produit
         </button>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
-      {/* Product Creation Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {editingProduct ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit'}
-              </h2>
-              <button
-                onClick={() => { setShowModal(false); setEditingProduct(null); }}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom du Produit *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    rows="2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Catégorie *
-                  </label>
-                  <select
-                    value={formData.CategoryId}
-                    onChange={(e) => setFormData({ ...formData, CategoryId: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Sélectionner une catégorie</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unité d'Achat *
-                  </label>
-                  <select
-                    value={formData.purchaseUnit}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormData({
-                        ...formData,
-                        purchaseUnit: val,
-                        unitsPerBox: val === 'UNIT' ? 1 : formData.unitsPerBox
-                      });
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="BOX">Carton / Pack</option>
-                    <option value="UNIT">Pièce / Unité</option>
-                  </select>
-                </div>
-
-                {formData.purchaseUnit === 'BOX' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Unités par Carton *
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.unitsPerBox}
-                      onChange={(e) => setFormData({ ...formData, unitsPerBox: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Combien d'unités dans un carton ?</p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prix d'Achat (par {formData.purchaseUnit === 'BOX' ? 'carton' : 'unité'}) *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.purchasePrice}
-                    onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Coût d'achat fournisseur</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prix de Vente (par unité) *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.sellingPrice}
-                    onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Prix de vente aux clients</p>
-                </div>
-              </div>
-
-              {formData.purchasePrice > 0 && formData.sellingPrice > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Coût Unitaire :</strong> {formatCurrency(formData.purchasePrice / (formData.purchaseUnit === 'BOX' ? formData.unitsPerBox : 1))}
-                    <br />
-                    <strong>Profit par Unité :</strong> {formatCurrency(formData.sellingPrice - (formData.purchasePrice / (formData.purchaseUnit === 'BOX' ? formData.unitsPerBox : 1)))}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => { setShowModal(false); setEditingProduct(null); }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-                >
-                  {submitting ? 'Traitement...' : (editingProduct ? 'Enregistrer' : 'Créer Produit')}
-                </button>
-              </div>
-            </form>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm"
+          />
         </div>
-      )}
-
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher des produits..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">Toutes Catégories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="px-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm"
+        >
+          <option value="all">Toutes Catégories</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
         {loading ? (
           <TableSkeleton rows={8} cols={6} />
         ) : (
@@ -363,73 +118,82 @@ export default function Products() {
             <table className="min-w-full divide-y divide-gray-100">
               <thead className="bg-gray-50/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Produit</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Catégorie</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Stock</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Condit.</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Achat</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">P. Vente</th>
-                  <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest">Statut</th>
-                  <th className="px-6 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-widest">Actions</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Désignation</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Type / Nature</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock Actuel</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">P. Vente</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Statut</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-100">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
-                      <Package className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                      <p>Aucun produit trouvé</p>
+                    <td colSpan="6" className="px-6 py-20 text-center text-gray-400">
+                      <Package className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                      <p className="font-bold">Aucun produit ne correspond à votre recherche</p>
                     </td>
                   </tr>
                 ) : (
                   filteredProducts.map((product) => {
-                    const stockQty = product.Stock?.quantity || 0;
+                    const stockQty = Number(product.Stock?.quantity || 0);
                     const status = getStockStatus(stockQty);
+
                     return (
-                      <tr key={product.id} className="hover:bg-gray-50">
+                      <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-bold text-gray-900 text-sm">{product.name}</div>
-                          {product.description && (
-                            <div className="text-xs text-gray-500 font-medium">{product.description}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {product.Category?.name || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-black ${stockQty <= (product.Stock?.minLevel || 0) ? 'text-red-600' : 'text-gray-900'}`}>
-                            {stockQty} <span className="text-[10px] uppercase font-bold text-gray-400">unités</span>
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {product.purchaseUnit === 'BOX' ? `${product.unitsPerBox} units/box` : 'Unité'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(product.purchasePrice)} / {product.purchaseUnit === 'BOX' ? 'carton' : 'unité'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(product.sellingPrice)} / unité
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl ${product.type === 'BAR' ? 'bg-purple-50 text-purple-600' :
+                              product.type === 'RESTAURANT' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
+                              }`}>
+                              {product.type === 'BAR' ? <Wine className="h-4 w-4" /> :
+                                product.type === 'RESTAURANT' ? <Beef className="h-4 w-4" /> : <Package className="h-4 w-4" />}
+                            </div>
+                            <div>
+                              <div className="font-black text-gray-900 text-sm">{product.name}</div>
+                              <div className="text-[10px] font-bold text-gray-400 uppercase">{product.Category?.name || 'Sans catégorie'}</div>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStockStatusColor(status)}`}>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-gray-700">{product.type}</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                              {product.nature === 'RAW_MATERIAL' ? 'Matière Première' :
+                                product.nature === 'FINISHED_GOOD' ? 'Produit Fini' : 'Service'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-sm font-black ${stockQty <= 10 ? 'text-red-600' : 'text-gray-900'}`}>
+                              {stockQty % 1 === 0 ? stockQty : stockQty.toFixed(2)}
+                            </span>
+                            <span className="text-[10px] font-black text-gray-400 uppercase">{product.baseUnit}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-black text-gray-900 text-sm">
+                          {formatCurrency(product.sellingPrice)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${getStockStatusColor(status)} shadow-sm`}>
                             {status}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => openEditModal(product)}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Modifier"
+                              onClick={() => { setEditingProduct(product); setShowModal(true); }}
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                             >
                               <Edit3 className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => openAdjustModal(product)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-xs text-amber-600 hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors"
+                              className="px-3 py-1.5 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100 rounded-xl hover:bg-amber-100 transition-all"
                             >
-                              <Plus className="h-3 w-3" />
-                              Ajuster Stock
+                              <Layers className="h-3 w-3" />
+                              Ajuster
                             </button>
                           </div>
                         </td>
@@ -443,7 +207,14 @@ export default function Products() {
         )}
       </div>
 
-      {/* Stock Adjustment Modal */}
+      {showModal && (
+        <ProductEditModal
+          product={editingProduct || { name: '', nature: 'FINISHED_GOOD', type: 'GENERAL' }}
+          onClose={() => { setShowModal(false); setEditingProduct(null); }}
+          onSuccess={fetchData}
+        />
+      )}
+
       <StockAdjustmentModal
         isOpen={showAdjustModal}
         onClose={() => setShowAdjustModal(false)}

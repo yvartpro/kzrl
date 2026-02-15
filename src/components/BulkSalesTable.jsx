@@ -37,7 +37,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
 
   const calculateRowTotal = (row) => {
     const price = getProductPrice(row.productId);
-    return price * (parseInt(row.quantity) || 0);
+    return price * (parseFloat(row.quantity) || 0);
   };
 
   const calculateGrandTotal = () => {
@@ -46,7 +46,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
 
   const handleSubmit = async () => {
     // Validate
-    const invalidRows = rows.filter(r => !r.productId || r.quantity <= 0);
+    const invalidRows = rows.filter(r => !r.productId || parseFloat(r.quantity) <= 0);
     if (invalidRows.length > 0) {
       toast.error('Veuillez sélectionner un produit et une quantité valide pour toutes les lignes');
       return;
@@ -56,7 +56,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
     try {
       const salesData = rows.map(row => ({
         productId: row.productId,
-        quantity: parseInt(row.quantity),
+        quantity: parseFloat(row.quantity),
         paymentMethod: row.paymentMethod,
         notes: row.notes
       }));
@@ -144,7 +144,8 @@ export default function BulkSalesTable({ products, onSuccess }) {
                   <td className="px-4 py-2">
                     <input
                       type="number"
-                      min="1"
+                      step="0.001"
+                      min="0.001"
                       value={row.quantity}
                       onChange={(e) => updateRow(index, 'quantity', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -164,7 +165,6 @@ export default function BulkSalesTable({ products, onSuccess }) {
                     >
                       <option value="CASH">Espèces</option>
                       <option value="MOBILE_MONEY">Mobile Money</option>
-                      <option value="CARD">Carte</option>
                     </select>
                   </td>
                   <td className="px-4 py-2 text-center">

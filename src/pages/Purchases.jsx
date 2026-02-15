@@ -185,9 +185,10 @@ export default function Purchases() {
                   </select>
                   <input
                     type="number"
-                    min="1"
+                    step="0.001"
+                    min="0.001"
                     value={item.quantityBoxes}
-                    onChange={(e) => updateItem(index, 'quantityBoxes', parseInt(e.target.value))}
+                    onChange={(e) => updateItem(index, 'quantityBoxes', parseFloat(e.target.value))}
                     placeholder={(() => {
                       const p = products.find(prod => prod.id === item.productId);
                       return p?.purchaseUnit === 'BOX' ? 'Cartons' : 'Unités';

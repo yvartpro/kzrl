@@ -1,5 +1,5 @@
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('fr-FR', {
     style: 'decimal',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
@@ -7,7 +7,7 @@ export const formatCurrency = (amount) => {
 };
 
 export const formatDate = (date) => {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('fr-FR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -15,7 +15,7 @@ export const formatDate = (date) => {
 };
 
 export const formatDateTime = (date) => {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('fr-FR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -25,8 +25,8 @@ export const formatDateTime = (date) => {
 };
 
 export const getStockStatus = (quantity, threshold = 10) => {
-  if (quantity === 0) return 'OUT';
-  if (quantity <= threshold) return 'LOW';
+  if (quantity === 0) return 'EPUISE';
+  if (quantity <= threshold) return 'FAIBLE';
   return 'OK';
 };
 

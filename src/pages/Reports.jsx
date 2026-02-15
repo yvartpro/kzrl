@@ -1,10 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Calendar, FileText, TrendingUp, Package, DollarSign, Download, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, TrendingUp, Package, DollarSign, Download, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDailyReport, getStockValuation, getJournalReport, getGlobalCapital } from '../api/services';
 import { formatCurrency } from '../utils/format';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
-import LoadingSpinner from '../components/LoadingSpinner';
 import StatCard from '../components/StatCard';
 import { CardSkeleton, TableSkeleton, Skeleton } from '../components/Skeletons';
 
