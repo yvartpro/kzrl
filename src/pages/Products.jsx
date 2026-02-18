@@ -144,10 +144,10 @@ export default function Products() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-xl ${product.type === 'BAR' ? 'bg-purple-50 text-purple-600' :
-                              product.type === 'RESTAURANT' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
+                              product.type === 'CUISINE' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
                               }`}>
                               {product.type === 'BAR' ? <Wine className="h-4 w-4" /> :
-                                product.type === 'RESTAURANT' ? <Beef className="h-4 w-4" /> : <Package className="h-4 w-4" />}
+                                product.type === 'CUISINE' ? <Beef className="h-4 w-4" /> : <Package className="h-4 w-4" />}
                             </div>
                             <div>
                               <div className="font-black text-gray-900 text-sm">{product.name}</div>
@@ -209,7 +209,7 @@ export default function Products() {
 
       {showModal && (
         <ProductEditModal
-          product={editingProduct || { name: '', nature: 'FINISHED_GOOD', type: 'GENERAL' }}
+          product={editingProduct || { name: '', nature: 'FINISHED_GOOD' }}
           onClose={() => { setShowModal(false); setEditingProduct(null); }}
           onSuccess={fetchData}
         />

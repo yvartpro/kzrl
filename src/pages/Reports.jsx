@@ -360,7 +360,17 @@ export default function Reports() {
                 ) : (
                   stockData.items.map((item) => (
                     <tr key={item.productId} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">{item.productName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                        <div className="flex items-center gap-2">
+                          {item.productName}
+                          {item.status === 'LOW' && (
+                            <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-black rounded border border-amber-100 uppercase tracking-tighter">Stock Bas</span>
+                          )}
+                          {item.status === 'OUT' && (
+                            <span className="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-black rounded border border-red-100 uppercase tracking-tighter">Épuisé</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm text-right text-gray-900">{item.quantity}</td>
                       <td className="px-6 py-4 text-sm text-right text-gray-900 font-medium">{formatCurrency(item.unitCost)}</td>
                       <td className="px-6 py-4 text-sm text-right font-bold text-indigo-600">{formatCurrency(item.totalValue)}</td>

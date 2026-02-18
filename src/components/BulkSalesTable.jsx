@@ -6,7 +6,7 @@ import { formatCurrency } from '../utils/format';
 
 export default function BulkSalesTable({ products, onSuccess }) {
   const [rows, setRows] = useState([
-    { id: 1, productId: '', quantity: 1, paymentMethod: 'CASH', notes: '' }
+    { id: 1, productId: '', quantity: 1, paymentMethod: 'CASH', isBulk: false, notes: '' }
   ]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
@@ -14,7 +14,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
   const addRow = () => {
     setRows([
       ...rows,
-      { id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', notes: '' }
+      { id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', isBulk: false, notes: '' }
     ]);
   };
 
@@ -30,14 +30,12 @@ export default function BulkSalesTable({ products, onSuccess }) {
     setRows(newRows);
   };
 
-  const getProductPrice = (productId) => {
-    const product = products.find(p => p.id == productId);
-    return product ? parseFloat(product.sellingPrice) : 0;
-  };
 
   const calculateRowTotal = (row) => {
-    const price = getProductPrice(row.productId);
-    return price * (parseFloat(row.quantity) || 0);
+    const product = products.find(p => p.id == row.productId);
+    const unitPrice = product ? parseFloat(product.sellingPrice) : 0;
+    const factor = row.isBulk && product ? parseFloat(product.unitsPerBox || 1) : 1;
+    return unitPrice * factor * (parseFloat(row.quantity) || 0);
   };
 
   const calculateGrandTotal = () => {
@@ -58,6 +56,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
         productId: row.productId,
         quantity: parseFloat(row.quantity),
         paymentMethod: row.paymentMethod,
+        isBulk: row.isBulk,
         notes: row.notes
       }));
 
@@ -85,7 +84,7 @@ export default function BulkSalesTable({ products, onSuccess }) {
         if (onSuccess && successCount > 0) onSuccess();
       } else {
         toast.success('Ventes enregistrées avec succès');
-        setRows([{ id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', notes: '' }]);
+        setRows([{ id: Date.now(), productId: '', quantity: 1, paymentMethod: 'CASH', isBulk: false, notes: '' }]);
         if (onSuccess) onSuccess();
       }
     } catch (error) {
@@ -142,17 +141,34 @@ export default function BulkSalesTable({ products, onSuccess }) {
                     </select>
                   </td>
                   <td className="px-4 py-2">
-                    <input
-                      type="number"
-                      step="0.001"
-                      min="0.001"
-                      value={row.quantity}
-                      onChange={(e) => updateRow(index, 'quantity', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="number"
+                        step="0.001"
+                        min="0.001"
+                        value={row.quantity}
+                        onChange={(e) => updateRow(index, 'quantity', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <div className="flex items-center gap-2 px-1">
+                        <input
+                          type="checkbox"
+                          id={`bulk-row-${row.id}`}
+                          checked={row.isBulk}
+                          onChange={(e) => updateRow(index, 'isBulk', e.target.checked)}
+                          className="w-3 h-3"
+                        />
+                        <label htmlFor={`bulk-row-${row.id}`} className="text-[10px] font-bold text-blue-600 uppercase">Vente en Gros</label>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-2 text-right text-sm text-gray-600">
-                    {formatCurrency(getProductPrice(row.productId))}
+                    {(() => {
+                      const p = products.find(prod => prod.id == row.productId);
+                      if (!p) return '-';
+                      const pPrice = parseFloat(p.sellingPrice);
+                      return formatCurrency(row.isBulk ? pPrice * parseFloat(p.unitsPerBox || 1) : pPrice);
+                    })()}
                   </td>
                   <td className="px-4 py-2 text-right text-sm font-medium text-gray-900">
                     {formatCurrency(calculateRowTotal(row))}

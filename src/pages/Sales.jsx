@@ -61,6 +61,8 @@ export default function Sales() {
         price: parseFloat(product.sellingPrice),
         quantity: 1,
         maxStock: product.Stock?.quantity || 0,
+        isBulk: false,
+        unitsPerBox: product.unitsPerBox || 1
       }]);
     }
   };
@@ -81,7 +83,12 @@ export default function Sales() {
     setCart(cart.filter(item => item.productId !== productId));
   };
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const calculateItemSubtotal = (item) => {
+    const unitPrice = item.isBulk ? item.price * item.unitsPerBox : item.price;
+    return unitPrice * item.quantity;
+  };
+
+  const total = cart.reduce((sum, item) => sum + calculateItemSubtotal(item), 0);
 
   const handleSubmit = async () => {
     if (cart.length === 0) return;
@@ -94,6 +101,7 @@ export default function Sales() {
         items: cart.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
+          isBulk: item.isBulk
         })),
         paymentMethod,
         storeId: currentStore?.id
@@ -202,28 +210,48 @@ export default function Sales() {
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                     {cart.map(item => (
-                      <div key={item.productId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium text-sm text-gray-900">{item.name}</p>
-                          <p className="text-xs text-gray-600">{formatCurrency(item.price)} × {item.quantity}</p>
+                      <div key={item.productId} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm text-gray-900">{item.name}</p>
+                            <p className="text-xs text-gray-600">
+                              {formatCurrency(item.isBulk ? item.price * item.unitsPerBox : item.price)} × {item.quantity}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-gray-100">
+                            <input
+                              type="checkbox"
+                              id={`bulk-sale-${item.productId}`}
+                              checked={item.isBulk}
+                              onChange={(e) => {
+                                setCart(cart.map(i =>
+                                  i.productId === item.productId ? { ...i, isBulk: e.target.checked } : i
+                                ));
+                              }}
+                              className="w-3 h-3"
+                            />
+                            <label htmlFor={`bulk-sale-${item.productId}`} className="text-[10px] font-black text-blue-600 uppercase">Gros</label>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.productId, -1)}
-                            className="p-1 hover:bg-gray-200 rounded"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.productId, 1)}
-                            className="p-1 hover:bg-gray-200 rounded"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => updateQuantity(item.productId, -1)}
+                              className="p-1 hover:bg-gray-200 rounded"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="w-8 text-center font-medium">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.productId, 1)}
+                              className="p-1 hover:bg-gray-200 rounded"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
                           <button
                             onClick={() => removeFromCart(item.productId)}
-                            className="p-1 hover:bg-red-100 rounded ml-2"
+                            className="p-1 hover:bg-red-100 rounded"
                           >
                             <X className="h-4 w-4 text-red-600" />
                           </button>

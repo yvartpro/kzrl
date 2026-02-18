@@ -22,7 +22,7 @@ export default function Purchases() {
 
   const [formData, setFormData] = useState({
     supplierId: '',
-    items: [{ productId: '', quantityBoxes: 1, unitPriceBox: 0 }],
+    items: [{ productId: '', quantity: 1, unitPrice: 0, isBulk: true }],
     notes: '',
   });
 
@@ -57,7 +57,7 @@ export default function Purchases() {
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { productId: '', quantityBoxes: 1, unitPriceBox: 0 }],
+      items: [...formData.items, { productId: '', quantity: 1, unitPrice: 0, isBulk: true }],
     });
   };
 
@@ -83,7 +83,7 @@ export default function Purchases() {
       setShowForm(false);
       setFormData({
         supplierId: '',
-        items: [{ productId: '', quantityBoxes: 1, unitPriceBox: 0 }],
+        items: [{ productId: '', quantity: 1, unitPrice: 0, isBulk: true }],
         notes: '',
       });
       fetchData();
@@ -162,60 +162,80 @@ export default function Purchases() {
               </div>
 
               {formData.items.map((item, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-50 rounded-lg">
-                  <select
-                    value={item.productId}
-                    onChange={(e) => {
-                      const prodId = e.target.value;
-                      const product = products.find(p => p.id === prodId);
-                      const unitPrice = product ? parseFloat(product.purchasePrice) : 0;
+                <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3 p-3 bg-gray-50 rounded-lg items-end">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs text-gray-400 font-bold uppercase mb-1">Produit</label>
+                    <select
+                      value={item.productId}
+                      onChange={(e) => {
+                        const prodId = e.target.value;
+                        const product = products.find(p => p.id === prodId);
+                        const unitPrice = product ? parseFloat(product.purchasePrice) : 0;
 
-                      const newItems = [...formData.items];
-                      newItems[index].productId = prodId;
-                      newItems[index].unitPriceBox = unitPrice;
-                      setFormData({ ...formData, items: newItems });
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg"
-                    required
-                  >
-                    <option value="">Sélectionner produit</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.Stock?.quantity || 0} en stock)</option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    step="0.001"
-                    min="0.001"
-                    value={item.quantityBoxes}
-                    onChange={(e) => updateItem(index, 'quantityBoxes', parseFloat(e.target.value))}
-                    placeholder={(() => {
-                      const p = products.find(prod => prod.id === item.productId);
-                      return p?.purchaseUnit === 'BOX' ? 'Cartons' : 'Unités';
-                    })()}
-                    className="px-3 py-2 border border-gray-300 rounded-lg"
-                    required
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    value={item.unitPriceBox}
-                    onChange={(e) => updateItem(index, 'unitPriceBox', parseFloat(e.target.value))}
-                    placeholder={(() => {
-                      const p = products.find(prod => prod.id === item.productId);
-                      return p?.purchaseUnit === 'BOX' ? 'Prix par carton' : 'Prix par unité';
-                    })()}
-                    className="px-3 py-2 border border-gray-300 rounded-lg"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    disabled={formData.items.length === 1}
-                  >
-                    Supprimer
-                  </button>
+                        const newItems = [...formData.items];
+                        newItems[index].productId = prodId;
+                        newItems[index].unitPrice = unitPrice;
+                        setFormData({ ...formData, items: newItems });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      required
+                    >
+                      <option value="">Sélectionner produit</option>
+                      {products.map(p => (
+                        <option key={p.id} value={p.id}>{p.name} ({p.Stock?.quantity || 0} en stock)</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs text-gray-400 font-bold uppercase">Quantité</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          id={`bulk-${index}`}
+                          checked={item.isBulk}
+                          onChange={(e) => updateItem(index, 'isBulk', e.target.checked)}
+                          className="w-3 h-3"
+                        />
+                        <label htmlFor={`bulk-${index}`} className="text-[10px] font-bold text-blue-600 uppercase">Gros</label>
+                      </div>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.001"
+                      min="0.001"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
+                      placeholder={(() => {
+                        const p = products.find(prod => prod.id === item.productId);
+                        if (!p) return 'Quantité';
+                        return item.isBulk ? p.purchaseUnit : p.baseUnit;
+                      })()}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 font-bold uppercase mb-1">Prix ({item.isBulk ? 'Gros' : 'Unitaire'})</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.unitPrice}
+                      onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      disabled={formData.items.length === 1}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, ClipboardList } from 'lucide-react';
 import { updateProduct, getCategories, getSuppliers, getProducts } from '../api/services';
 import { useToast } from './Toast';
+import { useStore } from '../contexts/StoreContext';
 
 export default function ProductEditModal({ product, onClose, onSuccess }) {
+  const { currentStore } = useStore();
   const [formData, setFormData] = useState({
     name: '',
     categoryId: '',
@@ -13,8 +15,9 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
     unitsPerBox: '1',
     purchasePrice: '',
     sellingPrice: '',
-    type: 'GENERAL',
+    type: product?.type || (currentStore?.type === 'WAREHOUSE' ? 'BOUTIQUE' : currentStore?.type) || 'BOUTIQUE',
     nature: 'FINISHED_GOOD',
+    minStockLevel: '0',
   });
 
   const [compositions, setCompositions] = useState([]);
@@ -23,25 +26,6 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
   const [availableIngredients, setAvailableIngredients] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        categoryId: product.CategoryId || product.Category?.id || '',
-        supplierId: product.SupplierId || product.Supplier?.id || '',
-        purchaseUnit: product.purchaseUnit || 'BOX',
-        baseUnit: product.baseUnit || 'UNIT',
-        unitsPerBox: product.unitsPerBox || '1',
-        purchasePrice: product.purchasePrice || '',
-        sellingPrice: product.sellingPrice || '',
-        type: product.type || 'GENERAL',
-        nature: product.nature || 'FINISHED_GOOD',
-      });
-      setCompositions(product.compositions || []);
-    }
-    fetchData();
-  }, [product, fetchData]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -57,6 +41,26 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
       console.error('Failed to fetch data:', error);
     }
   }, [product?.id]);
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || '',
+        categoryId: product.CategoryId || product.Category?.id || '',
+        supplierId: product.SupplierId || product.Supplier?.id || '',
+        purchaseUnit: product.purchaseUnit || 'BOX',
+        baseUnit: product.baseUnit || 'UNIT',
+        unitsPerBox: product.unitsPerBox || '1',
+        purchasePrice: product.purchasePrice || '',
+        sellingPrice: product.sellingPrice || '',
+        type: product.type || 'BOUTIQUE',
+        nature: product.nature || 'FINISHED_GOOD',
+        minStockLevel: product.minStockLevel || '0',
+      });
+      setCompositions(product.compositions || []);
+    }
+    fetchData();
+  }, [product, fetchData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -137,9 +141,15 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Usage / Contexte</label>
                 <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
-                  <option value="BAR">Bar (Boissons / Vins)</option>
-                  <option value="RESTAURANT">Restaurant (Cuisine / Buffet)</option>
-                  <option value="GENERAL">Général (Consommables / Divers)</option>
+                  {(!currentStore || currentStore.type === 'WAREHOUSE' || currentStore.type === 'BAR') && (
+                    <option value="BAR">Bar (Boissons / Vins)</option>
+                  )}
+                  {(!currentStore || currentStore.type === 'WAREHOUSE' || currentStore.type === 'CUISINE') && (
+                    <option value="CUISINE">Cuisine (Plats / Ingrédients)</option>
+                  )}
+                  {(!currentStore || currentStore.type === 'WAREHOUSE' || currentStore.type === 'BOUTIQUE') && (
+                    <option value="BOUTIQUE">Boutique (Articles / Divers)</option>
+                  )}
                 </select>
               </div>
               <div>
@@ -201,6 +211,10 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Facteur Conversion</label>
                 <input type="number" step="0.001" name="unitsPerBox" value={formData.unitsPerBox} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="Ex: 24" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-red-400 uppercase mb-2">Alerte Stock Bas ({formData.baseUnit})</label>
+                <input type="number" step="0.001" name="minStockLevel" value={formData.minStockLevel} onChange={handleChange} className="w-full px-4 py-3 border border-red-100 bg-red-50/30 rounded-2xl focus:ring-4 focus:ring-red-50 outline-none transition-all font-bold text-red-700" placeholder="Ex: 10" />
               </div>
             </div>
 

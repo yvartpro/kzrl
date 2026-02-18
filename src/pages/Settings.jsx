@@ -34,7 +34,7 @@ export default function Settings() {
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
 
   // Store form
-  const [storeForm, setStoreForm] = useState({ name: '', description: '' });
+  const [storeForm, setStoreForm] = useState({ name: '', description: '', type: 'BOUTIQUE' });
   const [storeSubmitting, setStoreSubmitting] = useState(false);
 
   // Initialization/Stock initialization state
@@ -144,7 +144,7 @@ export default function Settings() {
       setStoreSubmitting(true);
       setError(null);
       await createStore(storeForm);
-      setStoreForm({ name: '', description: '' });
+      setStoreForm({ name: '', description: '', type: 'BOUTIQUE' });
       toast.success('Magasin créé avec succès');
       refreshStores();
       fetchData();
@@ -549,6 +549,22 @@ export default function Settings() {
                     className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   />
                 </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type de Magasin
+                  </label>
+                  <select
+                    value={storeForm.type}
+                    onChange={(e) => setStoreForm({ ...storeForm, type: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
+                    required
+                  >
+                    <option value="BAR">Bar (Boissons / Vins)</option>
+                    <option value="CUISINE">Cuisine (Plats / Repas)</option>
+                    <option value="BOUTIQUE">Boutique (Articles / Divers)</option>
+                    <option value="WAREHOUSE">Entrepôt (Stock Global)</option>
+                  </select>
+                </div>
                 <button
                   type="submit"
                   disabled={storeSubmitting}
@@ -576,16 +592,28 @@ export default function Settings() {
                       key={store.id}
                       className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
                     >
-                      <div className="flex items-center gap-3 mb-1">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <StoreIcon className="h-5 w-5 text-blue-600" />
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <StoreIcon className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <span className="font-black text-gray-900">{store.name}</span>
+                            {store.description && (
+                              <p className="text-xs text-gray-500 font-medium">{store.description}</p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <span className="font-black text-gray-900">{store.name}</span>
-                          {store.description && (
-                            <p className="text-xs text-gray-500 font-medium">{store.description}</p>
-                          )}
-                        </div>
+                        <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${store.type === 'BAR' ? 'bg-purple-100 text-purple-700' :
+                          store.type === 'CUISINE' ? 'bg-orange-100 text-orange-700' :
+                            store.type === 'WAREHOUSE' ? 'bg-gray-100 text-gray-700' :
+                              'bg-emerald-100 text-emerald-700'
+                          }`}>
+                          {store.type === 'BAR' ? 'Bar' :
+                            store.type === 'CUISINE' ? 'Cuisine' :
+                              store.type === 'WAREHOUSE' ? 'Entrepôt' :
+                                'Boutique'}
+                        </span>
                       </div>
                     </div>
                   ))
