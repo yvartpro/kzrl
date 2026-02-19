@@ -91,7 +91,7 @@ export default function Salaries() {
         <p className="text-gray-600 mt-1">Payer le personnel via la caisse du magasin : <span className="font-bold text-indigo-600">{currentStore?.name}</span></p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 px-4 sm:px-0">
         {loading ? (
           <CardSkeleton count={2} />
         ) : (
@@ -150,7 +150,7 @@ export default function Salaries() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button
                         onClick={() => openPayModal(u)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-50 uppercase tracking-tighter"
                       >
                         <DollarSign className="h-4 w-4" />
                         Payer Salaire
@@ -221,18 +221,18 @@ export default function Salaries() {
                 />
               </div>
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-6 flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={() => setShowPayModal(false)}
-                  className="flex-1 py-4 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-2xl transition-all"
+                  className="w-full sm:flex-1 py-4 text-sm font-black text-gray-500 hover:bg-gray-50 rounded-2xl transition-all border-2 border-transparent hover:border-gray-100 uppercase tracking-widest"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 disabled:bg-gray-300 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 disabled:bg-gray-300 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
                 >
                   {submitting ? 'Traitement...' : 'Confirmer'}
                 </button>

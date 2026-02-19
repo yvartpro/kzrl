@@ -180,10 +180,14 @@ export default function DashboardLayout() {
             <Menu className="h-6 w-6" />
           </button>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-0">
+            <h1 className="lg:hidden text-lg font-black truncate bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              KZRL
+            </h1>
+          </div>
 
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:block text-sm text-gray-500 font-medium">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="hidden md:block text-sm text-gray-500 font-medium whitespace-nowrap">
               {new Date().toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 year: 'numeric',
@@ -191,20 +195,20 @@ export default function DashboardLayout() {
                 day: 'numeric'
               })}
             </span>
-            <div className="h-6 w-px bg-gray-200 hidden sm:block" />
-            <div className="flex items-center gap-3">
+            <div className="h-6 w-px bg-gray-200 hidden md:block" />
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-semibold text-gray-900">{user?.username}</p>
-                <p className="text-xs text-indigo-600 font-medium uppercase">{user?.role}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate max-w-[100px]">{user?.username}</p>
+                <p className="text-[10px] text-indigo-600 font-black uppercase tracking-tighter">{user?.role}</p>
               </div>
-              <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold shadow-sm">
+              <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
                 {user?.username?.charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
         </div>
 
-        <main className="py-6 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <main className="py-6 px-4 sm:px-6 lg:px-8 animate-fade-in overflow-x-hidden">
           <Outlet />
         </main>
       </div>

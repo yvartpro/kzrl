@@ -84,7 +84,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* Capital Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 px-4 sm:px-0">
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover-lift">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Liquidités (Caisse)</span>
@@ -131,7 +131,7 @@ export default function Dashboard() {
                   {todaySales.length} ventes
                 </span>
               </div>
-              <div className="overflow-auto flex-grow">
+              <div className="overflow-x-auto custom-scrollbar flex-grow">
                 {todaySales.length === 0 ? (
                   <div className="p-12 text-center text-gray-400">
                     <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-20" />
@@ -190,7 +190,7 @@ export default function Dashboard() {
                   {lowStockProducts.length} articles
                 </span>
               </div>
-              <div className="overflow-auto flex-grow max-h-[500px]">
+              <div className="overflow-x-auto custom-scrollbar flex-grow max-h-[500px]">
                 {lowStockProducts.length === 0 ? (
                   <div className="p-12 text-center text-gray-400">
                     <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-green-200" />

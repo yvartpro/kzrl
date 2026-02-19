@@ -249,8 +249,8 @@ export default function Settings() {
       {error && <ErrorMessage message={error} />}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex gap-6">
+      <div className="border-b border-gray-200 mb-6 overflow-x-auto custom-scrollbar">
+        <nav className="-mb-px flex gap-6 min-w-max">
           <button
             onClick={() => setActiveTab('categories')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'categories'
@@ -348,7 +348,7 @@ export default function Settings() {
               <h2 className="text-lg font-bold text-gray-900 mb-4">
                 Catégories Existantes ({loading ? '...' : categories.length})
               </h2>
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-hidden pr-2">
                 {loading ? (
                   <TableSkeleton rows={5} cols={1} />
                 ) : categories.length === 0 ? (
@@ -410,7 +410,7 @@ export default function Settings() {
               <h2 className="text-lg font-bold text-gray-900 mb-4">
                 Catégories de Matériel ({loading ? '...' : equipmentCategories.length})
               </h2>
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-hidden pr-2">
                 {loading ? (
                   <TableSkeleton rows={5} cols={1} />
                 ) : equipmentCategories.length === 0 ? (
@@ -484,9 +484,9 @@ export default function Settings() {
             {/* Suppliers List */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-gray-900 mb-4">
-                Fournisseurs Existants ({loading ? '...' : suppliers.length})
+                Fournisseurs Existantes ({loading ? '...' : suppliers.length})
               </h2>
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-hidden pr-2">
                 {loading ? (
                   <TableSkeleton rows={5} cols={1} />
                 ) : suppliers.length === 0 ? (
@@ -742,7 +742,7 @@ export default function Settings() {
                 Saisissez les quantités de produits déjà disponibles en stock.
               </p>
 
-              <div className="flex-grow overflow-auto max-h-[500px] border border-gray-50 rounded-xl shadow-inner bg-gray-50/30">
+              <div className="flex-grow overflow-auto max-h-[500px] border border-gray-50 rounded-xl shadow-inner bg-gray-50/30 overflow-x-auto custom-scrollbar">
                 {loading ? (
                   <div className="p-4 space-y-4">
                     <TableSkeleton rows={8} cols={2} />

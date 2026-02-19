@@ -117,21 +117,26 @@ export default function Reports() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-4 sm:px-0 no-print">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rapports Financiers</h1>
-          <p className="text-gray-600 mt-1">Journal comptable et résumés quotidiens</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
+            <span className="p-2 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100">
+              <FileText className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            Rapports
+          </h1>
+          <p className="text-gray-500 mt-1 sm:mt-2 font-medium text-sm sm:text-base">Journal comptable et résumés quotidiens</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 bg-white border border-gray-100 rounded-xl focus:ring-4 focus:ring-indigo-50 outline-none font-bold text-gray-700 shadow-sm"
           />
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg"
           >
             <Download className="h-5 w-5" />
             Imprimer
@@ -142,40 +147,46 @@ export default function Reports() {
       {error && <ErrorMessage message={error} />}
 
       {/* Global Capital Indicator */}
-      <div className="bg-white rounded-2xl p-6 mb-6 text-slate-900 border border-gray-100 shadow-sm overflow-hidden relative">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div>
-            <h2 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Capital Global du Bar</h2>
+      <div className="bg-white rounded-3xl p-6 sm:p-10 mb-8 border border-gray-100 shadow-xl overflow-hidden relative mx-4 sm:mx-0">
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-8">
+          <div className="w-full lg:w-auto text-center lg:text-left">
+            <h2 className="text-slate-500 text-[10px] sm:text-xs font-black uppercase tracking-widest mb-2">Capital Global du Bar</h2>
             {loading ? (
-              <Skeleton variant="text" className="w-48 h-10 mt-2" />
+              <Skeleton variant="text" className="w-48 h-12 mt-2 mx-auto lg:mx-0" />
             ) : (
-              <div className="text-4xl font-black tracking-tighter">{formatCurrency(capitalData.globalCapital)}</div>
+              <div className="text-4xl sm:text-5xl font-black text-indigo-900 tracking-tighter leading-none">{formatCurrency(capitalData.globalCapital)}</div>
             )}
           </div>
-          <div className="flex gap-8 border-l border-gray-100 pl-8 h-full">
-            <div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Liquidités (Caisse)</p>
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 border-t lg:border-t-0 lg:border-l border-gray-100 pt-8 lg:pt-0 lg:pl-12 h-full w-full lg:w-auto justify-center lg:justify-start">
+            <div className="text-center lg:text-left">
+              <p className="text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 flex items-center justify-center lg:justify-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Liquidités
+              </p>
               {loading ? (
-                <Skeleton variant="text" className="w-32 h-6" />
+                <Skeleton variant="text" className="w-32 h-8 mx-auto lg:mx-0" />
               ) : (
-                <p className="text-xl font-bold text-slate-900">{formatCurrency(capitalData.liquidAssets)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900">{formatCurrency(capitalData.liquidAssets)}</p>
               )}
             </div>
-            <div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Valeur du Stock</p>
+            <div className="text-center lg:text-left border-t sm:border-t-0 sm:border-l border-gray-50 pt-6 sm:pt-0 sm:pl-12">
+              <p className="text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 flex items-center justify-center lg:justify-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                Stock
+              </p>
               {loading ? (
-                <Skeleton variant="text" className="w-32 h-6" />
+                <Skeleton variant="text" className="w-32 h-8 mx-auto lg:mx-0" />
               ) : (
-                <p className="text-xl font-bold text-slate-900">{formatCurrency(capitalData.stockValue)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900">{formatCurrency(capitalData.stockValue)}</p>
               )}
             </div>
           </div>
         </div>
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-slate-100 rounded-full opacity-50"></div>
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-indigo-50 rounded-full opacity-30"></div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 no-print">
         {loading ? (
           <CardSkeleton count={4} />
         ) : (
@@ -234,7 +245,7 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="overflow-x-auto relative">
+        <div className="overflow-x-auto relative custom-scrollbar">
           {journalLoading ? (
             <TableSkeleton rows={10} cols={5} />
           ) : (
@@ -337,7 +348,7 @@ export default function Reports() {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto relative">
+        <div className="overflow-x-auto relative custom-scrollbar">
           {stockLoading ? (
             <TableSkeleton rows={10} cols={4} />
           ) : (

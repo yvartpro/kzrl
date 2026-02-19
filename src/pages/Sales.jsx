@@ -134,17 +134,17 @@ export default function Sales() {
         <p className="text-gray-600 mt-1">Traiter les transactions de vente</p>
       </div>
 
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
+      <div className="flex flex-col sm:flex-row bg-gray-100 p-1 rounded-xl mb-6 w-full sm:w-fit gap-1 sm:gap-0">
         <button
           onClick={() => setActiveTab('POS')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'POS' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'POS' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
         >
           Point de Vente (POS)
         </button>
         <button
           onClick={() => setActiveTab('BULK')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'BULK' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'BULK' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
         >
           Saisie Groupée
@@ -162,8 +162,8 @@ export default function Sales() {
       {activeTab === 'POS' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-sm">
               <input
                 type="text"
                 placeholder="Rechercher des produits..."
@@ -172,7 +172,7 @@ export default function Sales() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                 {loading ? (
                   <CardSkeleton count={6} />
                 ) : (
@@ -180,14 +180,14 @@ export default function Sales() {
                     <button
                       key={product.id}
                       onClick={() => addToCart(product)}
-                      className="p-4 border border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left shadow-sm hover:shadow-md"
+                      className="p-3 sm:p-4 border border-gray-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all text-left shadow-sm hover:shadow-md active:scale-95"
                     >
-                      <h3 className="font-bold text-gray-900 text-base">{product.name}</h3>
-                      <p className="text-sm text-gray-700 mt-1 font-medium">
-                        {formatCurrency(product.sellingPrice)} / unité
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1">{product.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
+                        {formatCurrency(product.sellingPrice)}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Stock: {product.Stock?.quantity || 0} unités
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                        Stock: {product.Stock?.quantity || 0}
                       </p>
                     </button>
                   ))
@@ -197,15 +197,15 @@ export default function Sales() {
           </div>
 
           {/* Cart */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-lg shadow-blue-50/50 sticky top-24">
-              <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2 tracking-tight">
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-lg shadow-blue-50/50 sticky top-24">
+              <h2 className="text-xl font-black text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 tracking-tight">
                 <ShoppingCart className="h-5 w-5" />
                 Panier ({cart.length})
               </h2>
 
               {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Panier vide</p>
+                <p className="text-gray-500 text-center py-6 sm:py-8">Panier vide</p>
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -284,7 +284,7 @@ export default function Sales() {
                   <button
                     onClick={handleSubmit}
                     disabled={submitting || cart.length === 0}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-bold transition-all shadow-lg shadow-blue-50 active:scale-95"
                   >
                     {submitting ? 'Traitement...' : 'Finaliser Vente'}
                   </button>

@@ -87,50 +87,50 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 sm:px-0">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tighter">Produits & Inventaire</h1>
-          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Gérer le stock multi-contextuel (Bar & Restaurant)</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter">Produits</h1>
+          <p className="text-[10px] sm:text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Gérer le stock Bar & Cuisine</p>
         </div>
         <button
           onClick={() => { setEditingProduct(null); setShowModal(true); }}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 text-sm"
         >
           <Plus className="h-5 w-5" />
-          Nouveau Produit
+          Nouveau
         </button>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 relative">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-4 sm:px-0">
+        <div className="sm:col-span-2 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Rechercher par nom..."
+            placeholder="Rechercher..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm text-sm"
           />
         </div>
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm"
+          className="px-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700 shadow-sm text-sm"
         >
-          <option value="all">Toutes Catégories</option>
+          <option value="all">Catégories</option>
           {categories.map(cat => (
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm mx-4 sm:mx-0">
         {loading ? (
           <TableSkeleton rows={8} cols={6} />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto custom-scrollbar">
             <table className="min-w-full divide-y divide-gray-100">
               <thead className="bg-gray-50/50">
                 <tr>

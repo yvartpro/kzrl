@@ -163,21 +163,21 @@ export default function EquipmentInventory() {
   return (
     <div className="pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-4 sm:px-0">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
             <span className="p-2 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-100">
-              <Briefcase className="h-7 w-7" />
+              <Briefcase className="h-6 w-6 sm:h-7 sm:w-7" />
             </span>
-            Inventaire Matériel
+            Matériel & Mobilier
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Gestion du mobilier et équipement fixe ({currentStore.name})</p>
+          <p className="text-gray-500 mt-1 sm:mt-2 font-medium text-sm sm:text-base">Gestion du mobilier et équipement fixe</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setActiveView(activeView === 'history' ? 'list' : 'history')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${activeView === 'history' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'}`}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all text-sm w-full sm:w-auto ${activeView === 'history' ? 'bg-gray-900 text-white shadow-xl shadow-gray-200' : 'bg-white text-gray-600 border-2 border-gray-100 hover:bg-gray-50'}`}
           >
             <History className="h-5 w-5" />
             Historique
@@ -186,7 +186,7 @@ export default function EquipmentInventory() {
           {activeView === 'list' && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 text-sm w-full sm:w-auto"
             >
               <Plus className="h-5 w-5" />
               Nouveau Matériel
@@ -257,16 +257,15 @@ export default function EquipmentInventory() {
                       )}
                     </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-50">
-                        <thead className="bg-white">
+                    <div className="overflow-x-auto relative custom-scrollbar">
+                      <table className="min-w-full divide-y divide-gray-100">
+                        <thead className="bg-gray-50/50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider w-10">#</th>
-                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Libelle</th>
-                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Description</th>
-                            <th className="px-6 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Quantité</th>
-                            <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">P.U</th>
-                            <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">P.T</th>
+                            <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-widest min-w-[50px]">#</th>
+                            <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-widest min-w-[200px]">Libelle</th>
+                            <th className="px-6 py-3 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Quantité</th>
+                            <th className="px-6 py-3 text-right text-xs font-black text-gray-400 uppercase tracking-widest">P.U</th>
+                            <th className="px-6 py-3 text-right text-xs font-black text-gray-400 uppercase tracking-widest">P.T</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -309,21 +308,21 @@ export default function EquipmentInventory() {
                 );
               })}
 
-              <div className="bg-blue-900 text-white rounded-3xl p-8 flex items-center justify-between shadow-xl mt-8">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-800 rounded-2xl">
-                    <Package className="h-8 w-8" />
+              <div className="bg-blue-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl mt-8">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <div className="p-3 bg-blue-800 rounded-2xl flex-shrink-0">
+                    <Package className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black">VALEUR TOTALE DU MATÉRIEL</h3>
-                    <p className="text-blue-300 text-sm font-bold uppercase tracking-widest">Calculé sur l'ensemble des catégories</p>
+                    <h3 className="text-lg sm:text-xl font-black">VALEUR TOTALE</h3>
+                    <p className="text-blue-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Global Magasin</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-black">
-                    {filteredEquipment.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitPrice || 0)), 0).toLocaleString()} <span className="text-xl text-blue-300">FBU</span>
+                <div className="text-center md:text-right w-full md:w-auto">
+                  <div className="text-2xl sm:text-3xl font-black">
+                    {filteredEquipment.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitPrice || 0)), 0).toLocaleString()} <span className="text-base sm:text-xl text-blue-300">FBU</span>
                   </div>
-                  <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Valorisation en temps réel</p>
+                  <p className="text-blue-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mt-1">Valorisation en temps réel</p>
                 </div>
               </div>
             </div>
@@ -334,8 +333,8 @@ export default function EquipmentInventory() {
       {/* Conducting View */}
       {activeView === 'conducting' && currentInventory && (
         <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-50 font-bold">
+          <div className="bg-white rounded-3xl border border-gray-100 p-4 sm:p-8 shadow-xl">
+            <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-50 font-bold">
               <div className="flex items-center gap-4">
                 <button type="button" onClick={() => setActiveView('list')} className="p-2 hover:bg-gray-50 rounded-xl">
                   <ArrowLeft className="h-6 w-6 text-gray-400" />
@@ -354,43 +353,43 @@ export default function EquipmentInventory() {
                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Théorique: {item.expectedQuantity}</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 items-end">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-gray-400">Réel</label>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400">Réel</label>
                         <input
                           type="number"
-                          className="w-20 px-3 py-2 bg-white border border-gray-200 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-2 bg-white border border-gray-200 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-blue-500"
                           value={item.actualQuantity}
                           onChange={(e) => handleUpdateItem(item.id, { actualQuantity: parseInt(e.target.value) || 0 })}
                         />
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-gray-400">P.U</label>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400">P.U</label>
                         <input
                           type="number"
-                          className="w-24 px-3 py-2 bg-white border border-gray-200 rounded-xl font-bold text-right outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-2 bg-white border border-gray-200 rounded-xl font-bold text-right outline-none focus:ring-2 focus:ring-blue-500"
                           value={item.unitPriceSnapshot || 0}
                           onChange={(e) => handleUpdateItem(item.id, { unitPriceSnapshot: parseFloat(e.target.value) || 0 })}
                         />
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-gray-400 text-right">P.T</label>
-                        <div className="w-28 px-3 py-2 bg-gray-100 border border-transparent rounded-xl font-black text-right text-blue-600">
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 text-right">P.T</label>
+                        <div className="w-full px-2 py-2 bg-gray-100 border border-transparent rounded-xl font-black text-right text-blue-600 text-xs sm:text-base">
                           {(Number(item.actualQuantity) * Number(item.unitPriceSnapshot || 0)).toLocaleString()}
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-gray-400">État</label>
+                      <div className="flex flex-col gap-1 col-span-3 md:col-span-1">
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400">État</label>
                         <select
-                          className="px-3 py-2 bg-white border border-gray-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          className="w-full px-2 py-2 bg-white border border-gray-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                           value={item.condition}
                           onChange={(e) => handleUpdateItem(item.id, { condition: e.target.value })}
                         >
-                          <option value="GOOD">Bon État</option>
-                          <option value="DAMAGED">Endommagé</option>
+                          <option value="GOOD">Bon</option>
+                          <option value="DAMAGED">Endom.</option>
                           <option value="LOST">Perdu</option>
                         </select>
                       </div>
@@ -409,29 +408,29 @@ export default function EquipmentInventory() {
 
             {/* FIXED FOOTER BAR FOR ACTIONS */}
             {currentInventory.status === 'OPEN' && (
-              <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 z-50 animate-in slide-in-from-bottom-full duration-500 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                  <div className="hidden md:flex items-center gap-3 text-emerald-600">
+              <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 animate-in slide-in-from-bottom-full duration-500 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="hidden min-[1100px]:flex items-center gap-3 text-emerald-600">
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="text-sm font-bold">Sauvegarde automatique active</span>
                   </div>
 
-                  <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => setActiveView('list')}
-                      className="flex-1 md:flex-none px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-black hover:bg-gray-50 transition-all shadow-sm"
+                      className="flex-1 sm:flex-none px-6 sm:px-10 py-3.5 bg-white border-2 border-gray-100 text-gray-700 rounded-xl text-xs sm:text-sm font-black hover:bg-gray-50 transition-all shadow-sm uppercase tracking-wider"
                     >
-                      SAUVEGARDER & QUITTER
+                      SAVER & QUITTER
                     </button>
                     <button
                       type="button"
                       onClick={handleCloseInventory}
                       disabled={submitting}
-                      className="flex-1 md:flex-none px-10 py-3 bg-gray-900 text-white rounded-xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="flex-1 sm:flex-none px-8 sm:px-12 py-3.5 bg-gray-900 text-white rounded-xl text-xs sm:text-sm font-black hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider"
                     >
-                      <Save className="h-5 w-5" />
-                      {submitting ? 'TRAITEMENT...' : 'TERMINER & CLÔTURER'}
+                      <Save className="h-4 sm:h-5 w-4 sm:w-5" />
+                      {submitting ? '...' : 'CLÔTURER'}
                     </button>
                   </div>
                 </div>

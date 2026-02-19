@@ -129,7 +129,7 @@ export default function Users() {
             />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto custom-scrollbar">
             {loading ? (
               <TableSkeleton rows={6} cols={5} />
             ) : (
@@ -355,18 +355,18 @@ export default function Users() {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-6">
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); setEditingUser(null); setFormData({ username: '', password: '', roleId: '', salary: 0, storeIds: [] }); }}
-                  className="flex-1 px-4 py-2 border rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                  className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-100 rounded-xl font-bold hover:bg-gray-50 transition-all text-gray-500"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50"
+                  className="w-full sm:flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-50 disabled:opacity-50"
                 >
                   {submitting ? 'Traitement...' : (editingUser ? 'Enregistrer' : 'Créer')}
                 </button>
@@ -422,18 +422,18 @@ export default function Users() {
                 ></textarea>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-6">
                 <button
                   type="button"
                   onClick={() => setPaymentUser(null)}
-                  className="flex-1 px-4 py-2 border rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                  className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-100 rounded-xl font-bold hover:bg-gray-50 transition-all text-gray-500"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || !paymentAmount}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-50 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <DollarSign className="h-5 w-5" />
                   {submitting ? 'Paiement...' : 'Confirmer le Paiement'}

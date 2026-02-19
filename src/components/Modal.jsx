@@ -27,7 +27,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
       {/* Modal Container */}
       <div
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+        className="relative w-[95%] sm:w-full sm:max-w-2xl bg-white rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] sm:max-h-[90vh]"
         role="dialog"
         aria-modal="true"
       >

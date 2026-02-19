@@ -103,14 +103,14 @@ export default function BulkSalesTable({ products, onSuccess, storeId }) {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm animate-fade-in">
-      <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+      <div className="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Saisie Groupée (Fin de Journée)</h2>
+          <h2 className="text-lg font-bold text-gray-900">Saisie Groupée (Fin de Journée)</h2>
           <p className="text-sm text-gray-600">Enregistrer plusieurs ventes en une seule fois</p>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-600">Total Global</p>
-          <p className="text-2xl font-bold text-blue-600">{formatCurrency(calculateGrandTotal())}</p>
+        <div className="text-left sm:text-right w-full sm:w-auto p-3 bg-blue-50 sm:bg-transparent rounded-xl border border-blue-100 sm:border-0">
+          <p className="text-xs sm:text-sm text-gray-600 font-bold uppercase tracking-wider">Total Global</p>
+          <p className="text-2xl font-black text-blue-600">{formatCurrency(calculateGrandTotal())}</p>
         </div>
       </div>
 
@@ -205,19 +205,18 @@ export default function BulkSalesTable({ products, onSuccess, storeId }) {
           </table>
         </div>
 
-        <div className="mt-6 flex gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
           <button
             onClick={addRow}
-            className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-all font-bold"
           >
             <Plus className="h-5 w-5" />
             Ajouter une ligne
           </button>
-          <div className="flex-1" />
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 font-bold shadow-lg shadow-blue-100"
           >
             {loading ? (
               <>

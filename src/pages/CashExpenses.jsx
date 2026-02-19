@@ -82,24 +82,33 @@ export default function CashExpenses() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-4 sm:px-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Caisse & Dépenses</h1>
-          <p className="text-gray-600 mt-1">Gérer les flux de trésorerie et les dépenses</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
+            <span className="p-2 bg-red-600 text-white rounded-2xl shadow-lg shadow-red-100">
+              <Wallet className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            Caisse & Dépenses
+          </h1>
+          <p className="text-gray-500 mt-1 sm:mt-2 font-medium text-sm sm:text-base">Gérer les flux de trésorerie et les dépenses</p>
         </div>
         <button
           onClick={() => setShowExpenseForm(!showExpenseForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black transition-all shadow-xl text-sm w-full sm:w-auto ${showExpenseForm ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-red-600 text-white hover:bg-red-700 shadow-red-100'}`}
         >
-          <Plus className="h-5 w-5" />
-          {showExpenseForm ? 'Annuler' : 'Enregistrer Dépense'}
+          {showExpenseForm ? 'Annuler' : (
+            <>
+              <Plus className="h-5 w-5" />
+              Nouvelle Dépense
+            </>
+          )}
         </button>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
         {loading ? (
           <CardSkeleton count={3} />
         ) : (
@@ -136,9 +145,9 @@ export default function CashExpenses() {
                 <h2 className="text-lg font-bold">Nouvelle Dépense</h2>
               </div>
               <form onSubmit={handleSubmitExpense} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                       Description <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -151,7 +160,7 @@ export default function CashExpenses() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                       Montant (FBu) <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -172,12 +181,12 @@ export default function CashExpenses() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-md shadow-red-100 disabled:bg-gray-300 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-red-600 text-white rounded-2xl font-black hover:bg-red-700 transition-all shadow-xl shadow-red-100 disabled:opacity-50 flex items-center justify-center gap-2 text-sm uppercase tracking-widest mt-2"
                 >
-                  {submitting ? 'Enregistrement...' : (
+                  {submitting ? 'TRAITEMENT...' : (
                     <>
                       <Plus className="h-5 w-5" />
-                      Enregistrer la Dépense
+                      CONFIRMER LA DÉPENSE
                     </>
                   )}
                 </button>
@@ -235,7 +244,7 @@ export default function CashExpenses() {
           <TrendingDown className="h-5 w-5 text-red-600" />
           Dépenses
         </h2>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto custom-scrollbar">
           {loading ? (
             <TableSkeleton rows={5} cols={3} />
           ) : (
@@ -282,7 +291,7 @@ export default function CashExpenses() {
           <Wallet className="h-5 w-5 text-blue-600" />
           Mouvements de Caisse
         </h2>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto custom-scrollbar">
           {loading ? (
             <TableSkeleton rows={5} cols={4} />
           ) : (
