@@ -36,7 +36,8 @@ export default function EquipmentInventory() {
     name: '',
     categoryId: '',
     description: '',
-    quantity: 0
+    quantity: 0,
+    unitPrice: 0
   });
 
   const fetchData = useCallback(async () => {
@@ -72,7 +73,7 @@ export default function EquipmentInventory() {
       await createEquipment({ ...formData, storeId: currentStore.id });
       toast.success('Matériel ajouté avec succès');
       setShowAddModal(false);
-      setFormData({ name: '', categoryId: '', description: '', quantity: 0 });
+      setFormData({ name: '', categoryId: '', description: '', quantity: 0, unitPrice: 0 });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erreur lors de l’ajout');
@@ -260,18 +261,24 @@ export default function EquipmentInventory() {
                       <table className="min-w-full divide-y divide-gray-50">
                         <thead className="bg-white">
                           <tr>
-                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Nom</th>
+                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider w-10">#</th>
+                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Libelle</th>
                             <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Description</th>
                             <th className="px-6 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Quantité</th>
+                            <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">P.U</th>
+                            <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">P.T</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                          {categoryItems.map(item => (
+                          {categoryItems.map((item, index) => (
                             <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400">
+                                {index + 1}
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className="font-bold text-gray-900">{item.name}</span>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-4 font-medium">
                                 <span className="text-sm text-gray-500 line-clamp-1">{item.description || '-'}</span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -279,14 +286,46 @@ export default function EquipmentInventory() {
                                   {item.quantity}
                                 </span>
                               </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-gray-600">
+                                {Number(item.unitPrice || 0).toLocaleString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900">
+                                {(Number(item.quantity) * Number(item.unitPrice || 0)).toLocaleString()}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
+                        <tfoot className="bg-gray-50/50">
+                          <tr>
+                            <td colSpan="5" className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase">Sous-total {category.name}</td>
+                            <td className="px-6 py-3 text-right font-black text-blue-600">
+                              {categoryItems.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitPrice || 0)), 0).toLocaleString()}
+                            </td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
                   </div>
                 );
               })}
+
+              <div className="bg-blue-900 text-white rounded-3xl p-8 flex items-center justify-between shadow-xl mt-8">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-800 rounded-2xl">
+                    <Package className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black">VALEUR TOTALE DU MATÉRIEL</h3>
+                    <p className="text-blue-300 text-sm font-bold uppercase tracking-widest">Calculé sur l'ensemble des catégories</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-black">
+                    {filteredEquipment.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitPrice || 0)), 0).toLocaleString()} <span className="text-xl text-blue-300">FBU</span>
+                  </div>
+                  <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mt-1">Valorisation en temps réel</p>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -324,6 +363,23 @@ export default function EquipmentInventory() {
                           value={item.actualQuantity}
                           onChange={(e) => handleUpdateItem(item.id, { actualQuantity: parseInt(e.target.value) || 0 })}
                         />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black uppercase text-gray-400">P.U</label>
+                        <input
+                          type="number"
+                          className="w-24 px-3 py-2 bg-white border border-gray-200 rounded-xl font-bold text-right outline-none focus:ring-2 focus:ring-blue-500"
+                          value={item.unitPriceSnapshot || 0}
+                          onChange={(e) => handleUpdateItem(item.id, { unitPriceSnapshot: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black uppercase text-gray-400 text-right">P.T</label>
+                        <div className="w-28 px-3 py-2 bg-gray-100 border border-transparent rounded-xl font-black text-right text-blue-600">
+                          {(Number(item.actualQuantity) * Number(item.unitPriceSnapshot || 0)).toLocaleString()}
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-1">
@@ -453,7 +509,7 @@ export default function EquipmentInventory() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Catégorie</label>
                 <select
@@ -476,7 +532,18 @@ export default function EquipmentInventory() {
                   min="0"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Prix Unitaire (P.U)</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                  value={formData.unitPrice}
+                  onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
                 />
               </div>
             </div>
