@@ -16,6 +16,7 @@ import Users from './pages/Users';
 import Salaries from './pages/Salaries';
 import Documentation from './pages/Documentation';
 import EquipmentInventory from './pages/EquipmentInventory';
+import Inventory from './pages/Inventory';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 <Route path="sales" element={<Sales />} />
                 <Route path="cash-expenses" element={<CashExpenses />} />
                 <Route path="equipment-inventory" element={<EquipmentInventory />} />
+                <Route path="inventory" element={<Inventory />} />
                 <Route path="salaries" element={
                   <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
                     <Salaries />

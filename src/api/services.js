@@ -72,6 +72,13 @@ export const startInventory = (data) => api.post('/equipment/inventories', data)
 export const updateInventoryItem = (id, data) => api.patch(`/equipment/inventories/items/${id}`, data);
 export const closeInventory = (id) => api.post(`/equipment/inventories/${id}/close`);
 
+// Product Inventory
+export const getProductInventories = (storeId) => api.get('/inventory', { params: { storeId } });
+export const getProductInventory = (id) => api.get(`/inventory/${id}`);
+export const startProductInventory = (data) => api.post('/inventory', data);
+export const updateProductInventoryItem = (id, data) => api.patch(`/inventory/items/${id}`, data);
+export const closeProductInventory = (id) => api.post(`/inventory/${id}/close`);
+
 // Units
 export const getUnits = () => api.get('/units');
 export const createUnit = (data) => api.post('/units', data);

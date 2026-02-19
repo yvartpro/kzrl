@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User, BookOpen, Store as StoreIcon, Briefcase } from 'lucide-react';
+import { Home, Package, ShoppingCart, DollarSign, BarChart3, Settings, Menu, X, Wallet, LogOut, User, BookOpen, Store as StoreIcon, Briefcase, ClipboardList } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
@@ -10,6 +10,7 @@ const navigation = [
   { name: 'Achats', href: '/purchases', icon: ShoppingCart },
   { name: 'Ventes', href: '/sales', icon: DollarSign },
   { name: 'Caisse & Dépenses', href: '/cash-expenses', icon: Wallet },
+  { name: 'Inventaire Casiers ✨', href: '/inventory', icon: ClipboardList, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Inventaire Matériel', href: '/equipment-inventory', icon: Briefcase },
   { name: 'Salaires', href: '/salaries', icon: User, roles: ['ADMIN', 'MANAGER'] },
   { name: 'Rapports', href: '/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
@@ -109,7 +110,7 @@ export default function DashboardLayout() {
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-white shadow-sm">
         <div className="flex h-16 items-center px-6 border-b">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">KZRL Manager</h1>
+          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 underline">KZRL Manager v2</h1>
         </div>
 
         <div className="px-4 py-4 border-b bg-gray-50">
