@@ -294,7 +294,7 @@ export default function Sales() {
           </div>
         </div>
       ) : (
-        <BulkSalesTable products={products} onSuccess={fetchProducts} />
+        <BulkSalesTable products={products} onSuccess={fetchProducts} storeId={currentStore?.id} />
       )}
     </div>
   );

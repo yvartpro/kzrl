@@ -4,7 +4,7 @@ import { useToast } from './Toast';
 import { createBulkSales } from '../api/services';
 import { formatCurrency } from '../utils/format';
 
-export default function BulkSalesTable({ products, onSuccess }) {
+export default function BulkSalesTable({ products, onSuccess, storeId }) {
   const [rows, setRows] = useState([
     { id: 1, productId: '', quantity: 1, paymentMethod: 'CASH', isBulk: false, notes: '' }
   ]);
@@ -50,6 +50,11 @@ export default function BulkSalesTable({ products, onSuccess }) {
       return;
     }
 
+    if (!storeId) {
+      toast.error('ID de la boutique manquant. Veuillez rafraîchir la page.');
+      return;
+    }
+
     setLoading(true);
     try {
       const salesData = rows.map(row => ({
@@ -57,7 +62,8 @@ export default function BulkSalesTable({ products, onSuccess }) {
         quantity: parseFloat(row.quantity),
         paymentMethod: row.paymentMethod,
         isBulk: row.isBulk,
-        notes: row.notes
+        notes: row.notes,
+        storeId: storeId // Include storeId per item
       }));
 
       const res = await createBulkSales(salesData);
