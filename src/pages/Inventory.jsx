@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ClipboardList, Plus, Search, ChevronRight, CheckCircle2, History, Package, ArrowLeft, Save, AlertTriangle } from 'lucide-react';
-import { getProductInventories, getProductInventory, startProductInventory, updateProductInventoryItem, closeProductInventory, getCategories } from '../api/services';
+import { getProductInventories, getProductInventory, startProductInventory, updateProductInventoryItem, closeProductInventory, getCategories, getProducts } from '../api/services';
 import { useStore } from '../contexts/StoreContext';
 import { useToast } from '../components/Toast';
 import ErrorMessage from '../components/ErrorMessage';
@@ -19,6 +19,8 @@ export default function Inventory() {
   const [inventories, setInventories] = useState([]);
   const [currentInventory, setCurrentInventory] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [showStartModal, setShowStartModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,12 +36,15 @@ export default function Inventory() {
     if (!currentStore) return;
     try {
       setLoading(true);
-      const [invRes, catRes] = await Promise.all([
+      const [invRes, catRes, prodRes] = await Promise.all([
         getProductInventories(currentStore.id),
-        getCategories(currentStore.id)
+        getCategories(currentStore.id),
+        getProducts(currentStore.id)
       ]);
       setInventories(invRes.data);
       setCategories(catRes.data);
+      setProducts(prodRes.data);
+
     } catch (err) {
       console.error(err);
       setError('Échec du chargement des inventaires');
@@ -194,69 +199,176 @@ export default function Inventory() {
 
       {error && <ErrorMessage message={error} />}
 
-      {/* List View */}
+      {/* List View - Stock Status by Category */}
       {activeView === 'list' && (
         <div className="space-y-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un produit..."
+              className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium text-gray-700"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           {loading ? (
             <TableSkeleton rows={5} cols={4} />
-          ) : inventories.length === 0 ? (
+          ) : products.length === 0 ? (
             <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-20 text-center">
               <Package className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 font-bold text-lg">Aucun inventaire trouvé</p>
-              <button onClick={() => setShowStartModal(true)} className="text-emerald-600 font-bold mt-2 hover:underline">
-                Démarrer votre premier inventaire de boissons
-              </button>
+              <p className="text-gray-500 font-bold text-lg">Aucun produit trouvé</p>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-              <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gray-50/50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Statut</th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Notes</th>
-                    <th className="px-6 py-4 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {inventories.map(inv => (
-                    <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-700">
-                        {new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${inv.status === 'CLOSED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {inv.status === 'CLOSED' ? 'Clôturé' : 'En cours'}
+            <div className="space-y-8">
+              {[...categories, { id: null, name: 'Autres / Sans Catégorie' }].map(category => {
+                const filteredProducts = products.filter(p => {
+                  const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+                  const matchesCategory = category.id ? p.CategoryId === category.id : !p.CategoryId;
+                  return matchesSearch && matchesCategory;
+                });
+
+                if (filteredProducts.length === 0) return null;
+
+                return (
+                  <div key={category.id || 'uncategorized'} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="p-2 bg-white rounded-lg border border-gray-100 shadow-sm text-emerald-600">
+                          <Package className="h-5 w-5" />
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate font-medium">
-                        {inv.notes || '-'}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {inv.status === 'OPEN' && (
-                            <button
-                              onClick={() => handleCloseInventory(inv.id)}
-                              className="px-3 py-1.5 bg-gray-900 text-white text-sm font-black rounded-lg hover:bg-black transition-all"
-                            >
-                              Clôturer
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleResumeInventory(inv.id)}
-                            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-bold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg"
-                          >
-                            {inv.status === 'OPEN' ? 'Reprendre' : 'Voir'}
-                            <ChevronRight className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <h3 className="text-lg font-black text-gray-900">{category.name}</h3>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setStartFormData({ ...startFormData, categoryId: category.id || '' });
+                          setShowStartModal(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-xl text-xs font-black hover:bg-emerald-200 transition-colors"
+                      >
+                        <ClipboardList className="h-3 w-3" />
+                        INVENTAIRE RAPIDE
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-50">
+                        <thead className="bg-white">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Produit</th>
+                            <th className="px-6 py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-wider">Stock Actuel</th>
+                            <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider">Conditionnement</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {filteredProducts.map(product => {
+                            const stock = product.Stocks?.[0]?.quantity || product.Stock?.quantity || 0;
+                            const unitsPerBox = product.unitsPerBox || 1;
+                            const crates = Math.floor(stock / unitsPerBox);
+                            const bottles = stock % unitsPerBox;
+
+                            return (
+                              <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="font-bold text-gray-900">{product.name}</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg font-black text-xs">
+                                      {crates} Casiers
+                                    </span>
+                                    {bottles > 0 && (
+                                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg font-black text-xs">
+                                        {bottles} Bouteilles
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                  <span className="text-xs text-gray-400 font-bold uppercase">{unitsPerBox} UNITÉS / CASIER</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* History View */}
+      {activeView === 'history' && (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="flex items-center gap-4 mb-4">
+            <button onClick={() => setActiveView('list')} className="p-2 hover:bg-gray-50 rounded-xl">
+              <ArrowLeft className="h-6 w-6 text-gray-400" />
+            </button>
+            <h2 className="text-xl font-black text-gray-900">Historique des Sessions d'Inventaire</h2>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Statut</th>
+                  <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Notes</th>
+                  <th className="px-6 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {inventories.map(inv => (
+                  <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-700">
+                      {new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${inv.status === 'CLOSED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {inv.status === 'CLOSED' ? 'Clôturé' : 'En cours'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate font-medium">
+                      {inv.notes || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {inv.status === 'OPEN' && (
+                          <button
+                            onClick={() => handleCloseInventory(inv.id)}
+                            className="px-3 py-1.5 bg-gray-900 text-white text-sm font-black rounded-lg hover:bg-black transition-all"
+                          >
+                            Clôturer
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleResumeInventory(inv.id)}
+                          className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-bold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg"
+                        >
+                          {inv.status === 'OPEN' ? 'Reprendre' : 'Voir'}
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {inventories.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-20 text-center">
+                      <Package className="h-12 w-12 mx-auto mb-4 text-gray-200" />
+                      <p className="text-gray-400 font-bold">Aucun historique de session</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
