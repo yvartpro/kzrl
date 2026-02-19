@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, ClipboardList } from 'lucide-react';
-import { updateProduct, getCategories, getSuppliers, getProducts } from '../api/services';
+import { updateProduct, createProduct, getCategories, getSuppliers, getProducts } from '../api/services';
 import { useToast } from './Toast';
 import { useStore } from '../contexts/StoreContext';
 
@@ -30,9 +30,9 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
   const fetchData = useCallback(async () => {
     try {
       const [categoriesRes, suppliersRes, productsRes] = await Promise.all([
-        getCategories(),
+        getCategories(currentStore?.id),
         getSuppliers(),
-        getProducts() // Fetch all to find ingredients
+        getProducts(currentStore?.id) // Fetch store-specific to find ingredients
       ]);
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
@@ -40,7 +40,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
-  }, [product?.id]);
+  }, [product?.id, currentStore?.id]);
 
   useEffect(() => {
     if (product) {
@@ -93,21 +93,29 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
     setLoading(true);
 
     try {
+      const isUpdate = !!product?.id;
       const payload = {
         ...formData,
+        storeId: currentStore?.id,
         compositions: compositions.map(c => ({
           componentProductId: c.componentProductId,
           quantity: c.quantity
         }))
       };
 
-      await updateProduct(product.id, payload);
-      toast.success('Produit mis à jour avec succès');
+      if (isUpdate) {
+        await updateProduct(product.id, payload);
+        toast.success('Produit mis à jour avec succès');
+      } else {
+        await createProduct(payload);
+        toast.success('Produit créé avec succès');
+      }
+
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Update product error:', error);
-      toast.error(error.response?.data?.error || 'Échec de la mise à jour');
+      console.error(product?.id ? 'Update product error:' : 'Create product error:', error);
+      toast.error(error.response?.data?.error || (product?.id ? 'Échec de la mise à jour' : 'Échec de la création'));
     } finally {
       setLoading(false);
     }
@@ -122,8 +130,8 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               <ClipboardList className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-gray-900">Configuration Produit</h2>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{product.name}</p>
+              <h2 className="text-xl font-black text-gray-900">{product?.id ? 'Configuration Produit' : 'Nouveau Produit'}</h2>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{product?.id ? product.name : 'Création de fiche'}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -170,7 +178,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Catégorie</label>
-                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" required>
                   <option value="">Sélectionner...</option>
                   {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
                 </select>
@@ -321,7 +329,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
           <div className="flex gap-4 mt-12 bg-white sticky bottom-0 border-t border-gray-50 pt-6">
             <button type="button" onClick={onClose} className="flex-1 px-8 py-4 border border-gray-200 text-gray-400 rounded-2xl font-black hover:bg-gray-50 transition-all">Annuler</button>
             <button type="submit" disabled={loading} className="flex-1 px-8 py-4 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? 'Enregistrement...' : 'Mettre à jour Configuration'}
+              {loading ? 'Enregistrement...' : (product?.id ? 'Mettre à jour Configuration' : 'Créer le Produit')}
             </button>
           </div>
         </form>
