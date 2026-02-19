@@ -71,3 +71,7 @@ export const getInventory = (id) => api.get(`/equipment/inventories/${id}`);
 export const startInventory = (data) => api.post('/equipment/inventories', data);
 export const updateInventoryItem = (id, data) => api.patch(`/equipment/inventories/items/${id}`, data);
 export const closeInventory = (id) => api.post(`/equipment/inventories/${id}/close`);
+
+// Units
+export const getUnits = () => api.get('/units');
+export const createUnit = (data) => api.post('/units', data);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, ClipboardList } from 'lucide-react';
 import { updateProduct, createProduct, getCategories, getSuppliers, getProducts } from '../api/services';
+import api from '../api/client';
 import { useToast } from './Toast';
 import { useStore } from '../contexts/StoreContext';
 
@@ -23,19 +24,24 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
   const [compositions, setCompositions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [units, setUnits] = useState([]);
   const [availableIngredients, setAvailableIngredients] = useState([]);
+  const [showNewUnitInput, setShowNewUnitInput] = useState(false);
+  const [newUnitName, setNewUnitName] = useState('');
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [categoriesRes, suppliersRes, productsRes] = await Promise.all([
+      const [categoriesRes, suppliersRes, productsRes, unitsRes] = await Promise.all([
         getCategories(currentStore?.id),
         getSuppliers(),
-        getProducts(currentStore?.id) // Fetch store-specific to find ingredients
+        getProducts(currentStore?.id),
+        api.get('/units')
       ]);
       setCategories(categoriesRes.data);
       setSuppliers(suppliersRes.data);
+      setUnits(unitsRes.data);
       setAvailableIngredients(productsRes.data.filter(p => p.nature === 'RAW_MATERIAL' && p.id !== product?.id));
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -49,7 +55,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
         categoryId: product.CategoryId || product.Category?.id || '',
         supplierId: product.SupplierId || product.Supplier?.id || '',
         purchaseUnit: product.purchaseUnit || 'BOX',
-        baseUnit: product.baseUnit || 'UNIT',
+        unitId: product.UnitId || '',
         unitsPerBox: product.unitsPerBox || '1',
         purchasePrice: product.purchasePrice || '',
         sellingPrice: product.sellingPrice || '',
@@ -64,6 +70,10 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'unitId' && value === 'NEW') {
+      setShowNewUnitInput(true);
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -96,6 +106,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
       const isUpdate = !!product?.id;
       const payload = {
         ...formData,
+        unitName: showNewUnitInput ? newUnitName : undefined,
         storeId: currentStore?.id,
         compositions: compositions.map(c => ({
           componentProductId: c.componentProductId,
@@ -120,6 +131,10 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
       setLoading(false);
     }
   };
+
+  const currentUnitName = showNewUnitInput
+    ? newUnitName
+    : (units.find(u => u.id === formData.unitId)?.name || 'unité');
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -198,30 +213,32 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
                 <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-tighter">Unités & Stockage</h3>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité d'Achat</label>
-                <select name="purchaseUnit" value={formData.purchaseUnit} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
-                  <option value="BOX">Carton / Caisse</option>
-                  <option value="UNIT">Unité / Pièce</option>
-                  <option value="KG">Kilogramme (KG)</option>
-                  <option value="L">Litre (L)</option>
-                </select>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité d'Achat (Ex: Caisse)</label>
+                <input type="text" name="purchaseUnit" value={formData.purchaseUnit} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="Ex: Caisse" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité de Base (Stock)</label>
-                <select name="baseUnit" value={formData.baseUnit} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
-                  <option value="UNIT">Pièce / Bouteille</option>
-                  <option value="KG">Kilogramme (KG)</option>
-                  <option value="G">Gramme (G)</option>
-                  <option value="L">Litre (L)</option>
-                  <option value="ML">Millilitre (ML)</option>
-                </select>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unité de Base (Vente/Ingrédient)</label>
+                {!showNewUnitInput ? (
+                  <select name="unitId" value={formData.unitId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
+                    <option value="">Sélectionner...</option>
+                    {units.map(unit => (<option key={unit.id} value={unit.id}>{unit.name}</option>))}
+                    <option value="NEW" className="text-blue-600 font-black">+ Nouveau Type...</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2">
+                    <input autoFocus type="text" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} className="w-full px-4 py-3 border border-blue-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none font-bold text-gray-700" placeholder="Ex: Bouteille" />
+                    <button type="button" onClick={() => { setShowNewUnitInput(false); setNewUnitName(''); }} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Facteur Conversion</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Unités par {formData.purchaseUnit || 'Caisse'}</label>
                 <input type="number" step="0.001" name="unitsPerBox" value={formData.unitsPerBox} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" placeholder="Ex: 24" />
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-red-400 uppercase mb-2">Alerte Stock Bas ({formData.baseUnit})</label>
+              <div className="md:col-span-3">
+                <label className="block text-[10px] font-black text-red-400 uppercase mb-2">Alerte Stock Bas ({currentUnitName})</label>
                 <input type="number" step="0.001" name="minStockLevel" value={formData.minStockLevel} onChange={handleChange} className="w-full px-4 py-3 border border-red-100 bg-red-50/30 rounded-2xl focus:ring-4 focus:ring-red-50 outline-none transition-all font-bold text-red-700" placeholder="Ex: 10" />
               </div>
             </div>
@@ -232,18 +249,18 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
                 <h3 className="text-sm font-black text-gray-900 mb-4 uppercase tracking-tighter">Tarification & Rentabilité</h3>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix d'Achat (par {formData.purchaseUnit})</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix d'Achat (par {formData.purchaseUnit || 'Caisse'})</label>
                 <input type="number" name="purchasePrice" value={formData.purchasePrice} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix de Vente (par {formData.baseUnit})</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Prix de Vente (unitaire / {currentUnitName})</label>
                 <input type="number" name="sellingPrice" value={formData.sellingPrice} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" />
               </div>
 
               <div className="md:col-span-2 p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
                 <div className="grid grid-cols-3 gap-6">
                   <div>
-                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-1">Coût de Revient ({formData.baseUnit})</p>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase mb-1">Coût de Revient ({currentUnitName})</p>
                     <p className="text-xl font-black text-emerald-900">{unitCost.toLocaleString()} FBu</p>
                   </div>
                   <div>
