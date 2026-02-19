@@ -7,6 +7,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { TableSkeleton } from '../components/Skeletons';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Inventory() {
   const { currentStore } = useStore();
@@ -21,6 +22,12 @@ export default function Inventory() {
 
   const [showStartModal, setShowStartModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { }
+  });
   const [startFormData, setStartFormData] = useState({ categoryId: '', notes: '' });
 
   const fetchData = useCallback(async () => {
@@ -97,20 +104,30 @@ export default function Inventory() {
     }
   };
 
-  const handleCloseInventory = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir clôturer cet inventaire ? Les stocks seront mis à jour définitivement.')) return;
-    try {
-      setSubmitting(true);
-      await closeProductInventory(currentInventory.id);
-      toast.success('Inventaire clôturé avec succès');
-      setActiveView('list');
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      toast.error('Erreur lors de la clôture');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleCloseInventory = async (inventoryId) => {
+    const id = (inventoryId && typeof inventoryId === 'string') ? inventoryId : currentInventory?.id;
+    if (!id) return;
+
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clôturer l’inventaire',
+      message: 'Êtes-vous sûr de vouloir clôturer cet inventaire ? Les stocks seront mis à jour définitivement et la session sera verrouillée.',
+      onConfirm: async () => {
+        try {
+          setSubmitting(true);
+          await closeProductInventory(id);
+          toast.success('Inventaire clôturé avec succès');
+          setActiveView('list');
+          fetchData();
+        } catch (err) {
+          console.error(err);
+          toast.error('Erreur lors de la clôture');
+        } finally {
+          setSubmitting(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const calculateItemRow = (item) => {
@@ -126,7 +143,8 @@ export default function Inventory() {
       gapBottles: gapInUnits % unitsPerCrate,
       gapAbsolute: gapInUnits,
       purchaseValue: (actualUnits / unitsPerCrate) * Number(item.purchasePriceSnapshot),
-      lossValue: (gapInUnits / unitsPerCrate) * Number(item.purchasePriceSnapshot)
+      lossValue: gapInUnits > 0 ? (gapInUnits / unitsPerCrate) * Number(item.purchasePriceSnapshot) : 0,
+      surplusValue: gapInUnits < 0 ? (Math.abs(gapInUnits) / unitsPerCrate) * Number(item.purchasePriceSnapshot) : 0
     };
   };
 
@@ -215,13 +233,23 @@ export default function Inventory() {
                         {inv.notes || '-'}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleResumeInventory(inv.id)}
-                          className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-bold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg ml-auto"
-                        >
-                          {inv.status === 'OPEN' ? 'Reprendre' : 'Voir'}
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {inv.status === 'OPEN' && (
+                            <button
+                              onClick={() => handleCloseInventory(inv.id)}
+                              className="px-3 py-1.5 bg-gray-900 text-white text-sm font-black rounded-lg hover:bg-black transition-all"
+                            >
+                              Clôturer
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleResumeInventory(inv.id)}
+                            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-bold text-sm bg-emerald-50 px-3 py-1.5 rounded-lg"
+                          >
+                            {inv.status === 'OPEN' ? 'Reprendre' : 'Voir'}
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -248,16 +276,9 @@ export default function Inventory() {
               </div>
 
               <div className="flex items-center gap-4">
-                {currentInventory.status === 'OPEN' && (
-                  <button
-                    onClick={handleCloseInventory}
-                    disabled={submitting}
-                    className="px-8 py-3 bg-gray-900 text-white rounded-xl font-black hover:bg-black transition-all shadow-lg flex items-center gap-2"
-                  >
-                    <Save className="h-5 w-5" />
-                    {submitting ? 'Traitement...' : 'Clôturer Inventaire'}
-                  </button>
-                )}
+                <span className="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse">
+                  Session Ouverte
+                </span>
               </div>
             </div>
 
@@ -272,7 +293,8 @@ export default function Inventory() {
                     <th colSpan="2" className="px-4 py-2 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-100 border-b border-gray-100">Ecarts</th>
                     <th rowSpan="2" className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-100">P.A.U</th>
                     <th rowSpan="2" className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-100">P.A</th>
-                    <th rowSpan="2" className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Pertes</th>
+                    <th rowSpan="2" className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-100 bg-red-50/50">Pertes</th>
+                    <th rowSpan="2" className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest bg-emerald-50/50">Bonis</th>
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-100">
                     <th className="px-4 py-2 text-center text-[10px] font-black text-gray-500 uppercase border-r border-gray-100">Casiers</th>
@@ -331,14 +353,23 @@ export default function Inventory() {
                         </td>
 
                         {/* VALUES */}
-                        <td className="px-4 py-3 text-right font-bold text-gray-500 border-r border-gray-50">
-                          {Number(item.purchasePriceSnapshot).toLocaleString()}
+                        <td className="px-2 py-2 border-r border-gray-50">
+                          <input
+                            type="number"
+                            disabled={isClosed}
+                            className="w-full px-2 py-2 bg-white border border-gray-200 rounded-lg font-bold text-right outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-transparent disabled:border-transparent text-gray-500"
+                            value={item.purchasePriceSnapshot}
+                            onChange={(e) => handleUpdateItem(item.id, { purchasePriceSnapshot: parseFloat(e.target.value) || 0 })}
+                          />
                         </td>
                         <td className="px-4 py-3 text-right font-black text-gray-900 border-r border-gray-50">
                           {Math.round(stats.purchaseValue).toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 text-right font-black text-red-600 bg-red-50/30">
-                          {Math.round(stats.lossValue).toLocaleString()}
+                        <td className={`px-4 py-3 text-right font-black ${stats.lossValue > 0 ? 'text-red-600 bg-red-50/30' : 'text-gray-300'}`}>
+                          {stats.lossValue > 0 ? Math.round(stats.lossValue).toLocaleString() : '-'}
+                        </td>
+                        <td className={`px-4 py-3 text-right font-black ${stats.surplusValue > 0 ? 'text-emerald-600 bg-emerald-50/30' : 'text-gray-300'}`}>
+                          {stats.surplusValue > 0 ? Math.round(stats.surplusValue).toLocaleString() : '-'}
                         </td>
                       </tr>
                     );
@@ -353,21 +384,55 @@ export default function Inventory() {
                     <td className="px-4 py-4 text-right font-black text-red-400">
                       {Math.round(currentInventory.ProductInventoryItems.reduce((sum, item) => sum + calculateItemRow(item).lossValue, 0)).toLocaleString()}
                     </td>
+                    <td className="px-4 py-4 text-right font-black text-emerald-400">
+                      {Math.round(currentInventory.ProductInventoryItems.reduce((sum, item) => sum + calculateItemRow(item).surplusValue, 0)).toLocaleString()}
+                    </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
+
+            {/* FIXED FOOTER BAR FOR ACTIONS */}
+            {currentInventory.status === 'OPEN' && (
+              <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 z-50 animate-in slide-in-from-bottom-full duration-500 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                  <div className="hidden md:flex items-center gap-3 text-emerald-600">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="text-sm font-bold">Sauvegarde automatique active</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('list')}
+                      className="flex-1 md:flex-none px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-black hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                      ENREGISTRER & QUITTER
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCloseInventory()}
+                      disabled={submitting}
+                      className="flex-1 md:flex-none px-10 py-3 bg-gray-900 text-white rounded-xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Save className="h-5 w-5" />
+                      {submitting ? 'TRAITEMENT...' : 'TERMINER & CLÔTURER'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {currentInventory.status === 'OPEN' && (
-            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-              <div>
-                <p className="text-amber-800 font-bold text-sm">Session en cours</p>
-                <p className="text-amber-700 text-xs">Les modifications sont enregistrées automatiquement. Clôturez l'inventaire pour impacter les stocks réels.</p>
-              </div>
-            </div>
-          )}
+          {/* Confirmation Dialog */}
+          <ConfirmDialog
+            isOpen={confirmModal.isOpen}
+            title={confirmModal.title}
+            message={confirmModal.message}
+            onConfirm={confirmModal.onConfirm}
+            onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+            loading={submitting}
+          />
         </div>
       )}
 

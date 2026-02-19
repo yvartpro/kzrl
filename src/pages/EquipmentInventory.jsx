@@ -7,6 +7,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { TableSkeleton } from '../components/Skeletons';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function EquipmentInventory() {
   const { currentStore } = useStore();
@@ -24,6 +25,12 @@ export default function EquipmentInventory() {
   const [openInventories, setOpenInventories] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { }
+  });
 
   const [formData, setFormData] = useState({
     name: '',
@@ -117,17 +124,25 @@ export default function EquipmentInventory() {
   };
 
   const handleCloseInventory = async () => {
-    try {
-      setSubmitting(true);
-      await closeInventory(currentInventory.id);
-      toast.success('Inventaire clôturé avec succès');
-      setActiveView('list');
-      fetchData();
-    } catch {
-      toast.error('Erreur lors de la clôture');
-    } finally {
-      setSubmitting(false);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clôturer l’Audit',
+      message: 'Êtes-vous sûr de vouloir clôturer cet audit de matériel ? Les quantités en stock seront mises à jour définitivement.',
+      onConfirm: async () => {
+        try {
+          setSubmitting(true);
+          await closeInventory(currentInventory.id);
+          toast.success('Inventaire clôturé avec succès');
+          setActiveView('list');
+          fetchData();
+        } catch {
+          toast.error('Erreur lors de la clôture');
+        } finally {
+          setSubmitting(false);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const filteredEquipment = equipment.filter(item =>
@@ -283,12 +298,12 @@ export default function EquipmentInventory() {
           <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl">
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-50 font-bold">
               <div className="flex items-center gap-4">
-                <button onClick={() => setActiveView('list')} className="p-2 hover:bg-gray-50 rounded-xl">
+                <button type="button" onClick={() => setActiveView('list')} className="p-2 hover:bg-gray-50 rounded-xl">
                   <ArrowLeft className="h-6 w-6 text-gray-400" />
                 </button>
                 <h2 className="text-2xl font-black text-gray-900 uppercase">Audit Matériel</h2>
               </div>
-              <span className="px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-xs font-black animate-pulse">SESSION OUVERTE</span>
+              <span className="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse">Session Ouverte</span>
             </div>
 
             <div className="space-y-4">
@@ -336,23 +351,48 @@ export default function EquipmentInventory() {
               ))}
             </div>
 
-            <div className="mt-10 pt-8 border-t border-gray-50 flex items-center justify-end gap-4">
-              <button
-                onClick={() => setActiveView('list')}
-                className="px-6 py-4 border border-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 transition-all font-black"
-              >
-                SAUVEGARDER
-              </button>
-              <button
-                onClick={handleCloseInventory}
-                disabled={submitting}
-                className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center gap-2"
-              >
-                <Save className="h-5 w-5" />
-                CLÔTURER AUDIT
-              </button>
-            </div>
+            {/* FIXED FOOTER BAR FOR ACTIONS */}
+            {currentInventory.status === 'OPEN' && (
+              <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 z-50 animate-in slide-in-from-bottom-full duration-500 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                  <div className="hidden md:flex items-center gap-3 text-emerald-600">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="text-sm font-bold">Sauvegarde automatique active</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('list')}
+                      className="flex-1 md:flex-none px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-black hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                      SAUVEGARDER & QUITTER
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCloseInventory}
+                      disabled={submitting}
+                      className="flex-1 md:flex-none px-10 py-3 bg-gray-900 text-white rounded-xl font-black hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Save className="h-5 w-5" />
+                      {submitting ? 'TRAITEMENT...' : 'TERMINER & CLÔTURER'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+          <div className="h-24" /> {/* Spacer for fixed bar */}
+
+          {/* Confirmation Dialog */}
+          <ConfirmDialog
+            isOpen={confirmModal.isOpen}
+            title={confirmModal.title}
+            message={confirmModal.message}
+            onConfirm={confirmModal.onConfirm}
+            onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+            loading={submitting}
+          />
         </div>
       )}
 
