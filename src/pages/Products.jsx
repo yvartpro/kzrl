@@ -24,18 +24,33 @@ export default function Products() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    console.log('[Products] Fetching data for store:', currentStore?.id);
     try {
       const [productsRes, categoriesRes] = await Promise.all([
         getProducts(currentStore?.id),
         getCategories(currentStore?.id),
       ]);
 
-      setProducts(productsRes.data.map(p => ({
-        ...p,
-        Stock: Array.isArray(p.Stocks) ? p.Stocks[0] : p.Stock
-      })));
+      console.log('[Products] Raw API Response:', productsRes.data);
+
+      const mappedProducts = productsRes.data.map(p => {
+        // Handle different stock property names from backend
+        const stock = Array.isArray(p.Stocks) ? p.Stocks[0] : (p.Stock || { quantity: 0 });
+        return {
+          ...p,
+          Stock: stock
+        };
+      });
+
+      console.log('[Products] Mapped Products for display:', mappedProducts);
+
+      setProducts(mappedProducts);
       setCategories(categoriesRes.data);
+
+      // Attach to window for easy console inspection by the user
+      window.DEBUG_PRODUCTS = mappedProducts;
     } catch (err) {
+      console.error('[Products] Fetch error details:', err);
       setError(err.response?.data?.error || 'Failed to load products');
     } finally {
       setLoading(false);
@@ -56,6 +71,7 @@ export default function Products() {
   };
 
   useEffect(() => {
+    console.log('[Products] useEffect triggered. currentStore:', currentStore?.id);
     if (currentStore) {
       fetchData();
     }

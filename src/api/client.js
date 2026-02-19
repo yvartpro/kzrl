@@ -13,8 +13,18 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    // Force absolute root path if no protocol to ensure it hits the Vite proxy
+    if (config.url && !config.url.startsWith('http') && !config.url.startsWith('/')) {
+      config.url = '/' + config.url;
+    }
+
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
+      hasToken: !!token,
+      headers: config.headers
+    });
+
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },

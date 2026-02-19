@@ -178,7 +178,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }) {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Catégorie</label>
-                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700" required>
+                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all font-bold text-gray-700">
                   <option value="">Sélectionner...</option>
                   {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
                 </select>
